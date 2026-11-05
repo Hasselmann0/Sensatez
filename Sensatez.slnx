@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Sensatez.Api/Sensatez.Api.csproj" />
+    <Project Path="src/Sensatez.Application/Sensatez.Application.csproj" />
+    <Project Path="src/Sensatez.Domain/Sensatez.Domain.csproj" />
+    <Project Path="src/Sensatez.Infra/Sensatez.Infra.csproj" />
+  </Folder>
+</Solution>
