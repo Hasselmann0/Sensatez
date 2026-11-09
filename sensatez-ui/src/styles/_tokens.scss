@@ -1,0 +1,19 @@
+:root {
+  --brand-gold: #d4a872;
+  --brand-gold-dark: #b8864b;
+  --brand-bronze: #5c3a21;
+  --surface-bg: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+}
+
+html.dark {
+  --surface-bg: #0d0d10;
+  --surface-card: #151519;
+  --surface-border: #262630;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+}
+
