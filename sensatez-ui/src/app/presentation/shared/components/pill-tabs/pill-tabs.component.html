@@ -1,0 +1,30 @@
+<div class="flex items-center gap-1.5 flex-wrap">
+  @for (tab of tabs(); track tab.id) {
+    <button
+      type="button"
+      (click)="tabChange.emit(tab.id)"
+      class="px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5"
+      [ngClass]="
+        activeTab() === tab.id
+          ? 'bg-slate-900 text-white dark:bg-[#262632] dark:text-zinc-100 shadow-sm border border-transparent dark:border-zinc-700'
+          : 'text-slate-600 hover:bg-slate-200/70 dark:text-zinc-400 dark:hover:bg-[#1C1C24] dark:hover:text-zinc-200'
+      "
+    >
+      <span>{{ tab.label }}</span>
+      @if (tab.count !== undefined && tab.count > 0) {
+        <span
+          class="px-1.5 py-0.2 rounded-full text-[10px] font-bold"
+          [ngClass]="{
+            'bg-rose-500 text-white': tab.badgeColor === 'danger',
+            'bg-amber-500 text-zinc-950': tab.badgeColor === 'warning',
+            'bg-emerald-500 text-white': tab.badgeColor === 'success',
+            'bg-zinc-700 text-zinc-200': !tab.badgeColor || tab.badgeColor === 'neutral'
+          }"
+        >
+          {{ tab.count }}
+        </span>
+      }
+    </button>
+  }
+</div>
+

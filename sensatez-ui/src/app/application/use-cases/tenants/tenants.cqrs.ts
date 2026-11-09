@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import {
   CreateTenantRequest,
@@ -7,14 +7,9 @@ import {
 } from '../../../domain/models/tenant.model';
 import { TenantRepository } from '../../../domain/repositories/repositories.tokens';
 import { ToastService } from '../../../presentation/shared/services/toast.service';
-import {
-  CommandBus,
-  ICommand,
-  ICommandHandler,
-  IQuery,
-  IQueryHandler,
-  QueryBus
-} from '../../cqrs/cqrs-bus';
+import { ICommand, ICommandHandler, IQuery, IQueryHandler } from '../../cqrs/cqrs-bus';
+
+export { TenantsStore } from './tenants.store';
 
 export class GetTenantsQuery implements IQuery<TenantResponse[]> {
   readonly __queryResultType?: TenantResponse[];
@@ -88,57 +83,3 @@ export class DeactivateTenantCommandHandler
     );
   }
 }
-
-@Injectable({ providedIn: 'root' })
-export class TenantsStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
-
-  readonly tenants = signal<TenantResponse[]>([]);
-  readonly loading = signal<boolean>(false);
-
-  loadTenants(filters?: { search?: string; onlyActive?: boolean }): void {
-    this.loading.set(true);
-    this.queryBus.dispatch(new GetTenantsQuery(filters)).subscribe({
-      next: list => {
-        this.tenants.set(list);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
-  }
-
-  createTenant(payload: CreateTenantRequest, onSuccess?: () => void): void {
-    this.loading.set(true);
-    this.commandBus.dispatch(new CreateTenantCommand(payload)).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.loadTenants();
-        onSuccess?.();
-      },
-      error: () => this.loading.set(false)
-    });
-  }
-
-  updateTenant(id: string, payload: UpdateTenantRequest, onSuccess?: () => void): void {
-    this.loading.set(true);
-    this.commandBus.dispatch(new UpdateTenantCommand(id, payload)).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.loadTenants();
-        onSuccess?.();
-      },
-      error: () => this.loading.set(false)
-    });
-  }
-
-  deactivateTenant(id: string, onSuccess?: () => void): void {
-    this.commandBus.dispatch(new DeactivateTenantCommand(id)).subscribe({
-      next: () => {
-        this.loadTenants();
-        onSuccess?.();
-      }
-    });
-  }
-}
-

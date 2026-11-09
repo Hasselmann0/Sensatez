@@ -1,0 +1,34 @@
+<div class="border-b border-slate-200 dark:border-[#262630] flex items-center gap-6 overflow-x-auto">
+  @for (tab of tabs(); track tab.id) {
+    <button
+      type="button"
+      (click)="tabChange.emit(tab.id)"
+      class="relative pb-3 text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2"
+      [ngClass]="
+        activeTab() === tab.id
+          ? 'text-[#5C3A21] dark:text-[#D4A872] font-semibold'
+          : 'text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+      "
+    >
+      <span>{{ tab.label }}</span>
+      @if (tab.count !== undefined) {
+        <span
+          class="px-1.5 py-0.2 rounded-full text-[11px] font-semibold"
+          [ngClass]="
+            activeTab() === tab.id
+              ? 'bg-[#5C3A21]/15 text-[#5C3A21] dark:bg-[#D4A872]/20 dark:text-[#D4A872]'
+              : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'
+          "
+        >
+          {{ tab.count }}
+        </span>
+      }
+      @if (activeTab() === tab.id) {
+        <span
+          class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5C3A21] dark:bg-[#D4A872] rounded-full"
+        ></span>
+      }
+    </button>
+  }
+</div>
+

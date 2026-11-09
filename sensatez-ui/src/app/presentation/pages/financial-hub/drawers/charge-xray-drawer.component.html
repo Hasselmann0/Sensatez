@@ -1,0 +1,316 @@
+@if (hubStore.drawerOpen()) {
+  <div class="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
+    <div
+      class="w-full max-w-xl h-full bg-white dark:bg-[#14141A] border-l border-slate-200 dark:border-[#262632] shadow-2xl flex flex-col overflow-hidden"
+    >
+      <!-- Cabeçalho do Drawer -->
+      <div
+        class="px-6 py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between bg-slate-50 dark:bg-[#191922]"
+      >
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[#D4A872]">
+            Raio-X Completo do Aluguel
+          </span>
+          @if (hubStore.selectedChargeDetail(); as detail) {
+            <h2 class="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
+              Competência {{ detail.referenceMonth | number: '2.0-0' }}/{{ detail.referenceYear }}
+            </h2>
+          }
+        </div>
+
+        <button
+          type="button"
+          (click)="hubStore.closeChargeDrawer()"
+          class="w-8 h-8 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-sm hover:border-[#D4A872]"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Corpo do Drawer -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        @if (hubStore.drawerLoading() && !hubStore.selectedChargeDetail()) {
+          <div class="py-16 text-center text-sm text-slate-400 animate-pulse">
+            Carregando detalhes financeiros da parcela...
+          </div>
+        }
+
+        @if (hubStore.selectedChargeDetail(); as detail) {
+          <!-- Status e Imóvel -->
+          <div
+            class="p-4 rounded-2xl border border-slate-200 dark:border-[#262632] bg-slate-50/70 dark:bg-[#191922] space-y-3"
+          >
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <app-status-badge
+                type="visualStatus"
+                [value]="detail.visualStatus"
+                [showDot]="true"
+              />
+              <span class="text-xs text-slate-500 dark:text-zinc-400">
+                Vencimento: <strong class="text-slate-800 dark:text-zinc-200">{{ detail.dueDate | date: 'dd/MM/yyyy' }}</strong>
+                @if (detail.daysOverdue > 0 && detail.status === ChargeStatus.Pending) {
+                  <span class="text-rose-500 font-bold"> ({{ detail.daysOverdue }} dias em atraso)</span>
+                }
+              </span>
+            </div>
+
+            <div>
+              <div class="text-xs text-slate-400">Imóvel Locado</div>
+              <div class="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+                🏠 {{ detail.propertyAddress }}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
+              <!-- Inquilino -->
+              <div class="space-y-1.5">
+                <div class="text-[11px] text-slate-400">Inquilino(a)</div>
+                <div class="text-xs font-semibold">{{ detail.tenantName }}</div>
+                <app-whatsapp-button
+                  [phone]="detail.tenantPhone"
+                  label="Chamar no WhatsApp"
+                  [message]="buildWhatsAppMessage(detail)"
+                />
+              </div>
+
+              <!-- Proprietário -->
+              <div class="space-y-1.5">
+                <div class="text-[11px] text-slate-400">Proprietário(a)</div>
+                <div class="text-xs font-semibold">{{ detail.ownerName }}</div>
+                <app-pix-copy-button [pixKey]="detail.ownerPixKey" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Decomposição Financeira e Split Imobiliário -->
+          <div
+            class="p-4 rounded-2xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#15151C] space-y-2.5"
+          >
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+              Decomposição Financeira & Split
+            </h3>
+
+            <div class="space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-500 dark:text-zinc-400">Valor Base do Aluguel:</span>
+                <span class="font-medium">{{ detail.originalAmount | currency: 'BRL' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500 dark:text-zinc-400">(+) Multa contratual:</span>
+                <span class="text-rose-500 font-medium">{{ detail.penaltyAmount | currency: 'BRL' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500 dark:text-zinc-400">(+) Juros pro rata die:</span>
+                <span class="text-rose-500 font-medium">{{ detail.interestAmount | currency: 'BRL' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500 dark:text-zinc-400">(-) Desconto concedido:</span>
+                <span class="text-emerald-500 font-medium">{{ detail.discountAmount | currency: 'BRL' }}</span>
+              </div>
+
+              <div
+                class="flex justify-between pt-2 border-t border-slate-200 dark:border-zinc-800 text-sm font-bold"
+              >
+                <span>Total Atualizado Sugerido:</span>
+                <span class="text-[#D4A872]">
+                  {{ detail.suggestedUpdatedTotalAmount | currency: 'BRL' }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              class="grid grid-cols-2 gap-3 pt-3 mt-2 border-t border-dashed border-slate-200 dark:border-zinc-800"
+            >
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#1C1C26]">
+                <span class="text-[11px] text-slate-400 block">
+                  🏢 Comissão Imobiliária ({{ detail.commissionPercentage }}%)
+                </span>
+                <span class="text-sm font-bold text-slate-800 dark:text-zinc-100">
+                  {{ detail.commissionAmount | currency: 'BRL' }}
+                </span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <span class="text-[11px] text-emerald-600 dark:text-emerald-400 block">
+                  🤝 Líquido do Proprietário
+                </span>
+                <span class="text-sm font-bold text-emerald-600 dark:text-emerald-300">
+                  {{ detail.netOwnerAmount | currency: 'BRL' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AÇÃO 1: REGISTRAR PAGAMENTO (DAR BAIXA) — Visível se Pending -->
+          @if (detail.status === ChargeStatus.Pending) {
+            <form
+              [formGroup]="payForm"
+              (ngSubmit)="submitPayment(detail.id)"
+              class="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-4"
+            >
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-500">
+                  ✅ Ação 1: Registrar Pagamento (Dar Baixa)
+                </h3>
+                <span class="text-[11px] text-slate-400">Permite acordo / edição de encargos</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                    Data do Pagamento
+                  </label>
+                  <input
+                    type="date"
+                    formControlName="paidAt"
+                    class="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                    Meio de Pagamento
+                  </label>
+                  <select
+                    formControlName="paymentMethod"
+                    class="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                  >
+                    <option value="Pix">Pix</option>
+                    <option value="Boleto">Boleto Bancário</option>
+                    <option value="Transferência">Transferência TED/DOC</option>
+                    <option value="Dinheiro">Dinheiro / Espécie</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2.5">
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                    Multa (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    formControlName="penaltyAmount"
+                    class="w-full px-2.5 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                    Juros (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    formControlName="interestAmount"
+                    class="w-full px-2.5 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                    Desconto (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    formControlName="discountAmount"
+                    class="w-full px-2.5 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                  Observação do Recebimento
+                </label>
+                <input
+                  type="text"
+                  formControlName="notes"
+                  placeholder="Ex: Comprovante Pix recebido pelo WhatsApp"
+                  class="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                />
+              </div>
+
+              <button
+                type="submit"
+                [disabled]="hubStore.drawerLoading()"
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors shadow-lg shadow-emerald-600/20"
+              >
+                {{ hubStore.drawerLoading() ? 'Processando Baixa...' : 'Confirmar Recebimento (Dar Baixa)' }}
+              </button>
+            </form>
+          }
+
+          <!-- AÇÃO 2: CONFIRMAR REPASSE AO PROPRIETÁRIO — Visível se Paid && !isTransferredToOwner -->
+          @if (detail.status === ChargeStatus.Paid && !detail.isTransferredToOwner) {
+            <div
+              class="p-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 space-y-3"
+            >
+              <h3 class="text-xs font-bold uppercase tracking-wider text-amber-500">
+                🤝 Ação 2: Confirmar Repasse ao Proprietário
+              </h3>
+              <p class="text-xs text-slate-700 dark:text-zinc-200 leading-relaxed">
+                Valor líquido a transferir:
+                <strong class="text-emerald-500 text-sm">{{ detail.netOwnerAmount | currency: 'BRL' }}</strong>
+                para Chave Pix:
+                <strong class="text-[#D4A872]">{{ detail.ownerPixKey || 'Não informada' }}</strong>
+              </p>
+
+              <div>
+                <label class="block text-[11px] font-medium text-slate-500 dark:text-zinc-400 mb-1">
+                  Observação do Repasse
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="transferNotes"
+                  placeholder="Ex: Pix enviado para chave CPF do proprietário"
+                  class="w-full px-3 py-2 rounded-xl text-xs bg-white dark:bg-[#191922] border border-slate-200 dark:border-zinc-700"
+                />
+              </div>
+
+              <button
+                type="button"
+                (click)="submitTransfer(detail.id)"
+                [disabled]="hubStore.drawerLoading()"
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#D4A872] hover:brightness-105 text-zinc-950 transition-all"
+              >
+                Confirmar Repasse Pix ao Proprietário
+              </button>
+            </div>
+          }
+
+          @if (detail.status === ChargeStatus.Paid && detail.isTransferredToOwner) {
+            <div
+              class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-500 flex items-center justify-between"
+            >
+              <span>✅ Aluguel quitado e repassado ao proprietário!</span>
+              <span>{{ detail.transferredToOwnerAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          }
+
+          <!-- AÇÃO 3: BLOCO DE ANOTAÇÕES RÁPIDAS (PATCH /api/charges/{id}/notes) -->
+          <div
+            class="p-4 rounded-2xl border border-slate-200 dark:border-[#262632] bg-slate-50/50 dark:bg-[#191922] space-y-3"
+          >
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+              📝 Histórico / Anotações de Cobrança
+            </h3>
+            <textarea
+              rows="3"
+              [(ngModel)]="quickNotes"
+              placeholder="Registre tentativas de contato, acordos ou promessas de pagamento..."
+              class="w-full p-3 rounded-xl text-xs bg-white dark:bg-[#14141A] border border-slate-200 dark:border-zinc-700 focus:outline-none focus:border-[#D4A872]"
+            ></textarea>
+            <button
+              type="button"
+              (click)="saveNotes(detail.id)"
+              [disabled]="hubStore.drawerLoading()"
+              class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-colors"
+            >
+              Salvar Anotação
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+

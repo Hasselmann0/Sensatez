@@ -1,0 +1,18 @@
+@if (pixKey()) {
+  <button
+    type="button"
+    (click)="copy($event)"
+    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 transition-colors"
+    title="Copiar Chave Pix"
+  >
+    <span class="truncate max-w-[140px]">Pix: {{ pixKey() }}</span>
+    @if (copied()) {
+      <span class="text-emerald-500 font-bold">✓ Copiado</span>
+    } @else {
+      <span class="text-[#D4A872]">📋</span>
+    }
+  </button>
+} @else {
+  <span class="text-xs text-slate-400 dark:text-zinc-500 italic">Sem chave Pix</span>
+}
+

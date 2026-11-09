@@ -1,0 +1,12 @@
+@if (phone()) {
+  <button
+    type="button"
+    (click)="openWhatsApp($event)"
+    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition-colors"
+    title="Iniciar conversa no WhatsApp"
+  >
+    <span>💬</span>
+    <span>{{ label() }}</span>
+  </button>
+}
+

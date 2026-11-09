@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.blueprint-grid {
+  background-image: radial-gradient(#d4a872 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
