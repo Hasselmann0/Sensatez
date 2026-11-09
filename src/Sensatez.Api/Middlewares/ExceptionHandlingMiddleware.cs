@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sensatez.Application.Exceptions;
 
 namespace Sensatez.Api.Middlewares;
@@ -17,8 +18,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             var (status, title) = ex switch
             {
                 ValidationException => (StatusCodes.Status400BadRequest, "Dados inválidos"),
+                UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Não autorizado"),
                 NotFoundException => (StatusCodes.Status404NotFound, "Recurso não encontrado"),
                 BusinessRuleException => (StatusCodes.Status409Conflict, "Regra de negócio violada"),
+                DbUpdateException => (StatusCodes.Status409Conflict, "Conflito de integridade de dados no banco"),
                 _ => (StatusCodes.Status500InternalServerError, "Erro interno")
             };
 

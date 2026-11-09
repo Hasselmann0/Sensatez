@@ -1,9 +1,17 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Sensatez.Api.Middlewares;
+using Sensatez.Api.Security;
 using Sensatez.Application.Exceptions;
+using Sensatez.Application.Repository;
+using Sensatez.Application.Security;
+using Sensatez.Application.Services;
+using Sensatez.Domain.Entities;
 using Sensatez.Infra.Data;
+using Sensatez.Infra.Repository;
+using Sensatez.Infra.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,11 +21,37 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<SensatezDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SensatezCorsPolicy", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
+
+builder.Services.AddAuthentication("Bearer")
+    .AddScheme<AuthenticationSchemeOptions, JwtBearerAuthenticationHandler>("Bearer", null);
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddControllers();
 
 // Register Repositories and Services (Scoped) here:
-// builder.Services.AddScoped<IExampleRepository, ExampleRepository>();
-// builder.Services.AddScoped<IExampleService, ExampleService>();
+builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
+builder.Services.AddScoped<IOwnerService, OwnerService>();
+builder.Services.AddScoped<ITenantRepository, TenantRepository>();
+builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+builder.Services.AddScoped<IPropertyService, PropertyService>();
+builder.Services.AddScoped<ILeaseContractRepository, LeaseContractRepository>();
+builder.Services.AddScoped<IRentChargeRepository, RentChargeRepository>();
+builder.Services.AddScoped<ILeaseContractService, LeaseContractService>();
+builder.Services.AddScoped<IRentChargeService, RentChargeService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<NotFoundException>();
 
@@ -30,6 +64,23 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SensatezDbContext>();
     dbContext.Database.Migrate();
+
+    var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+    if (!await userRepository.AnyAsync())
+    {
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var adminName = builder.Configuration["AdminSeed:FullName"] ?? "Administrador Sensatez";
+        var adminEmail = builder.Configuration["AdminSeed:Email"] ?? "admin@sensatez.com.br";
+        var adminPassword = builder.Configuration["AdminSeed:Password"] ?? "Admin@2026!";
+
+        await userRepository.AddAsync(new User
+        {
+            FullName = adminName,
+            Email = adminEmail,
+            PasswordHash = passwordHasher.Hash(adminPassword),
+            IsActive = true
+        });
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -43,6 +94,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("SensatezCorsPolicy");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
