@@ -2,9 +2,9 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { ContractsStore } from '../../../application/use-cases/contracts/contracts.cqrs';
-import { PropertiesStore } from '../../../application/use-cases/properties/properties.cqrs';
-import { TenantsStore } from '../../../application/use-cases/tenants/tenants.cqrs';
+import { ContractsStore } from '../../../application/use-cases/contracts/contracts.store';
+import { PropertiesStore } from '../../../application/use-cases/properties/properties.store';
+import { TenantsStore } from '../../../application/use-cases/tenants/tenants.store';
 import {
   ContractStatus,
   PropertyStatus,

@@ -6,19 +6,12 @@ import {
   ReadjustContractRequest,
   TerminateContractRequest
 } from '../../../domain/models/lease-contract.model';
-import { CommandBus, QueryBus } from '../../cqrs/cqrs-bus';
-import {
-  CreateContractCommand,
-  GetContractByIdQuery,
-  GetContractsQuery,
-  ReadjustContractCommand,
-  TerminateContractCommand
-} from './contracts.cqrs';
+import { ContractPort, NotificationPort } from '../../../domain/ports/ports.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class ContractsStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
+  private readonly contractPort = inject(ContractPort);
+  private readonly notification = inject(NotificationPort);
 
   readonly contracts = signal<LeaseContractResponse[]>([]);
   readonly selectedContract = signal<LeaseContractResponse | null>(null);
@@ -32,7 +25,7 @@ export class ContractsStore {
     expiringWithinDays?: number;
   }): void {
     this.loading.set(true);
-    this.queryBus.dispatch(new GetContractsQuery(filters)).subscribe({
+    this.contractPort.getAll(filters).subscribe({
       next: list => {
         this.contracts.set(list);
         this.loading.set(false);
@@ -43,7 +36,7 @@ export class ContractsStore {
 
   loadContractDetail(id: string): void {
     this.detailLoading.set(true);
-    this.queryBus.dispatch(new GetContractByIdQuery(id)).subscribe({
+    this.contractPort.getById(id).subscribe({
       next: detail => {
         this.selectedContract.set(detail);
         this.detailLoading.set(false);
@@ -57,8 +50,13 @@ export class ContractsStore {
     onSuccess?: (contract: LeaseContractResponse) => void
   ): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new CreateContractCommand(payload)).subscribe({
+    this.contractPort.create(payload).subscribe({
       next: created => {
+        const count = created.charges?.length ?? 0;
+        this.notification.success(
+          `Contrato ativado! ${count ? count + ' parcelas mensais foram geradas' : 'Parcelas geradas'} no Calendário Financeiro.`,
+          'Locação confirmada'
+        );
         this.loading.set(false);
         this.loadContracts();
         onSuccess?.(created);
@@ -73,8 +71,12 @@ export class ContractsStore {
     onSuccess?: (updated: LeaseContractResponse) => void
   ): void {
     this.detailLoading.set(true);
-    this.commandBus.dispatch(new ReadjustContractCommand(id, payload)).subscribe({
+    this.contractPort.readjust(id, payload).subscribe({
       next: updated => {
+        this.notification.success(
+          'Reajuste anual aplicado! Todas as parcelas futuras em aberto foram recalculadas.',
+          'Aluguel reajustado'
+        );
         this.selectedContract.set(updated);
         this.detailLoading.set(false);
         this.loadContracts();
@@ -90,8 +92,12 @@ export class ContractsStore {
     onSuccess?: (updated: LeaseContractResponse) => void
   ): void {
     this.detailLoading.set(true);
-    this.commandBus.dispatch(new TerminateContractCommand(id, payload)).subscribe({
+    this.contractPort.terminate(id, payload).subscribe({
       next: updated => {
+        this.notification.success(
+          'Contrato rescindido! O imóvel voltou para Disponível e as parcelas futuras foram canceladas.',
+          'Contrato encerrado'
+        );
         this.selectedContract.set(updated);
         this.detailLoading.set(false);
         this.loadContracts();
@@ -101,4 +107,3 @@ export class ContractsStore {
     });
   }
 }
-

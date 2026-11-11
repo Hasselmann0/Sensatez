@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { CommandBus } from '../../application/cqrs/cqrs-bus';
-import { AuthStore, LogoutCommand } from '../../application/use-cases/auth/auth.cqrs';
-import { FinancialHubStore } from '../../application/use-cases/dashboard-hub/financial-hub.cqrs';
+import { AuthStore } from '../../application/use-cases/auth/auth.store';
+import { FinancialHubStore } from '../../application/use-cases/dashboard-hub/financial-hub.store';
 import { ThemeService } from '../../infrastructure/storage/theme.service';
 
 @Component({
@@ -19,11 +18,11 @@ export class MainShellComponent implements OnInit {
   readonly authStore = inject(AuthStore);
   readonly hubStore = inject(FinancialHubStore);
   readonly themeService = inject(ThemeService);
-  private readonly commandBus = inject(CommandBus);
   private readonly router = inject(Router);
 
   readonly collapsed = signal<boolean>(false);
   readonly alertsPopoverOpen = signal<boolean>(false);
+  readonly mobileMenuOpen = signal<boolean>(false);
 
   ngOnInit(): void {
     if (!this.hubStore.summaryData()) {
@@ -39,6 +38,10 @@ export class MainShellComponent implements OnInit {
     );
   }
 
+  isRouteActive(pathPrefix: string): boolean {
+    return this.router.url.startsWith(pathPrefix);
+  }
+
   onQuickSearch(term: string): void {
     this.hubStore.searchQuery.set(term);
     if (!this.router.url.startsWith('/painel')) {
@@ -48,10 +51,18 @@ export class MainShellComponent implements OnInit {
 
   navigateToHubTab(tab: 'AGENDA' | 'CALENDAR_GRID' | 'OVERDUE' | 'EXECUTIVE'): void {
     this.hubStore.activeTab.set(tab);
+    this.mobileMenuOpen.set(false);
     this.router.navigate(['/painel']);
   }
 
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
   logout(): void {
-    this.commandBus.dispatch(new LogoutCommand()).subscribe();
+    this.mobileMenuOpen.set(false);
+    this.authStore.logout(() => {
+      this.router.navigate(['/login']);
+    });
   }
 }

@@ -1,8 +1,8 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ContractsStore } from '../../../application/use-cases/contracts/contracts.cqrs';
-import { TenantsStore } from '../../../application/use-cases/tenants/tenants.cqrs';
+import { ContractsStore } from '../../../application/use-cases/contracts/contracts.store';
+import { TenantsStore } from '../../../application/use-cases/tenants/tenants.store';
 import { TenantResponse } from '../../../domain/models/tenant.model';
 import { DocumentValidator } from '../../../domain/validators/document.validator';
 import { CpfCnpjPipe, PhoneBrPipe } from '../../pipes/format.pipes';

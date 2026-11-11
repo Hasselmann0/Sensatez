@@ -4,25 +4,19 @@ import {
   TenantResponse,
   UpdateTenantRequest
 } from '../../../domain/models/tenant.model';
-import { CommandBus, QueryBus } from '../../cqrs/cqrs-bus';
-import {
-  CreateTenantCommand,
-  DeactivateTenantCommand,
-  GetTenantsQuery,
-  UpdateTenantCommand
-} from './tenants.cqrs';
+import { NotificationPort, TenantPort } from '../../../domain/ports/ports.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class TenantsStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
+  private readonly tenantPort = inject(TenantPort);
+  private readonly notification = inject(NotificationPort);
 
   readonly tenants = signal<TenantResponse[]>([]);
   readonly loading = signal<boolean>(false);
 
   loadTenants(filters?: { search?: string; onlyActive?: boolean }): void {
     this.loading.set(true);
-    this.queryBus.dispatch(new GetTenantsQuery(filters)).subscribe({
+    this.tenantPort.getAll(filters).subscribe({
       next: list => {
         this.tenants.set(list);
         this.loading.set(false);
@@ -33,8 +27,9 @@ export class TenantsStore {
 
   createTenant(payload: CreateTenantRequest, onSuccess?: () => void): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new CreateTenantCommand(payload)).subscribe({
-      next: () => {
+    this.tenantPort.create(payload).subscribe({
+      next: tenant => {
+        this.notification.success(`Inquilino(a) ${tenant.fullName} cadastrado(a) com sucesso!`);
         this.loading.set(false);
         this.loadTenants();
         onSuccess?.();
@@ -45,8 +40,9 @@ export class TenantsStore {
 
   updateTenant(id: string, payload: UpdateTenantRequest, onSuccess?: () => void): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new UpdateTenantCommand(id, payload)).subscribe({
-      next: () => {
+    this.tenantPort.update(id, payload).subscribe({
+      next: tenant => {
+        this.notification.success(`Cadastro de ${tenant.fullName} atualizado!`);
         this.loading.set(false);
         this.loadTenants();
         onSuccess?.();
@@ -56,12 +52,12 @@ export class TenantsStore {
   }
 
   deactivateTenant(id: string, onSuccess?: () => void): void {
-    this.commandBus.dispatch(new DeactivateTenantCommand(id)).subscribe({
+    this.tenantPort.deactivate(id).subscribe({
       next: () => {
+        this.notification.info('Inquilino inativado com sucesso.');
         this.loadTenants();
         onSuccess?.();
       }
     });
   }
 }
-

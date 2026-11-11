@@ -1,22 +1,22 @@
-<div class="space-y-6">
-  <!-- 1. CABEÇALHO FIEL AO ANEXO 3 ("Gestão de cobranças" -> "Carteira de Imóveis") -->
-  <div class="flex items-center justify-between gap-4">
+<div class="space-y-4 sm:space-y-6">
+  <!-- 1. CABEÇALHO -->
+  <div class="flex items-center justify-between gap-3">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-zinc-100">
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100">
         Carteira de Imóveis
       </h1>
     </div>
     <button
       type="button"
       (click)="openCreateModal()"
-      class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] hover:bg-[#4A2E1A] dark:bg-[#D4A872] dark:text-zinc-950 text-white transition-all shadow-sm"
+      class="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] hover:bg-[#4A2E1A] dark:bg-[#D4A872] dark:text-zinc-950 text-white transition-all shadow-sm shrink-0"
     >
-      Nova propriedade
+      + Novo imóvel
     </button>
   </div>
 
-  <!-- 2. ABAS COM SUBLINHADO (Estilo Anexo 3: Todas | Disponíveis | Alugados | Em Manutenção) -->
-  <div class="space-y-3">
+  <!-- 2. ABAS COM SUBLINHADO -->
+  <div class="space-y-2.5 sm:space-y-3">
     <app-underline-tabs
       [tabs]="statusTabs()"
       [activeTab]="selectedTab()"
@@ -27,8 +27,8 @@
     </p>
   </div>
 
-  <!-- 3. BARRA DE PESQUISA + PILLS DE FILTROS À DIREITA (Estilo Anexo 3) -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <!-- 3. BARRA DE PESQUISA + PILLS DE FILTROS -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
     <div class="relative w-full sm:max-w-sm">
       <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">🔍</span>
       <input
@@ -44,7 +44,7 @@
       <select
         [ngModel]="selectedOwnerId()"
         (ngModelChange)="onOwnerFilterChange($event)"
-        class="px-3.5 py-2 rounded-full text-xs font-medium bg-white dark:bg-[#151519] border border-slate-200 dark:border-[#262630] text-slate-700 dark:text-zinc-200"
+        class="flex-1 sm:flex-none px-3.5 py-2 rounded-full text-xs font-medium bg-white dark:bg-[#151519] border border-slate-200 dark:border-[#262630] text-slate-700 dark:text-zinc-200 truncate"
       >
         <option value="">Proprietário: Todos</option>
         @for (owner of ownersStore.owners(); track owner.id) {
@@ -55,7 +55,7 @@
       <select
         [ngModel]="selectedType()"
         (ngModelChange)="selectedType.set($event)"
-        class="px-3.5 py-2 rounded-full text-xs font-medium bg-slate-900 text-white dark:bg-[#24242E] dark:text-zinc-100"
+        class="flex-1 sm:flex-none px-3.5 py-2 rounded-full text-xs font-medium bg-slate-900 text-white dark:bg-[#24242E] dark:text-zinc-100"
       >
         <option value="">Tipo: Todos</option>
         @for (t of propertyTypes; track t.value) {
@@ -69,37 +69,122 @@
           (click)="clearFilters()"
           class="px-3 py-1.5 rounded-full text-xs text-rose-500 hover:bg-rose-500/10"
         >
-          Limpar filtros ✕
+          Limpar ✕
         </button>
       }
     </div>
   </div>
 
-  <!-- 4. FAIXA DE RESUMO COM BOLINHAS COLORIDAS (Estilo Anexo 3) -->
+  <!-- 4. FAIXA DE RESUMO COM BOLINHAS COLORIDAS -->
   <app-status-summary-strip [items]="summaryStripItems()" />
 
-  <!-- 5. BARRA AUXILIAR ACIMA DA TABELA (Exportar + Contador à direita igual ao Anexo 3) -->
-  <div class="flex items-center justify-between">
+  <!-- 5. BARRA AUXILIAR ACIMA DA LISTAGEM -->
+  <div class="flex items-center justify-between gap-2">
     <button
       type="button"
       (click)="exportCsv()"
-      class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] hover:border-[#D4A872] transition-colors"
+      class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] hover:border-[#D4A872] transition-colors"
     >
-      <span>Exportar relatório</span>
+      <span>Exportar CSV</span>
       <span>↓</span>
     </button>
 
     <div class="text-right">
-      <span class="text-[11px] text-slate-400 block">Total de imóveis na listagem</span>
+      <span class="text-[11px] text-slate-400 block">Total na listagem</span>
       <strong class="text-xs font-bold text-slate-900 dark:text-zinc-100">
         {{ filteredProperties().length }} imóveis
       </strong>
     </div>
   </div>
 
-  <!-- 6. TABELA DE DADOS ESTILO ANEXO 3 -->
+  <!-- 6A. VISÃO MOBILE (< md): CARDS VERTICAIS INTERATIVOS -->
+  <div class="md:hidden space-y-3">
+    @for (prop of filteredProperties(); track prop.id) {
+      <div
+        class="p-4 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] shadow-sm space-y-3"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span
+              class="px-2.5 py-0.5 rounded-md font-mono text-xs font-bold bg-slate-100 dark:bg-[#1E1E26] text-slate-800 dark:text-[#D4A872] border border-slate-200 dark:border-zinc-700"
+            >
+              {{ prop.code }}
+            </span>
+            <app-status-badge type="propertyType" [value]="prop.type" />
+          </div>
+          <app-status-badge type="propertyStatus" [value]="prop.status" />
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100">
+            {{ prop.street }}, {{ prop.number }}
+            @if (prop.complement) {
+              <span class="font-normal text-slate-500"> ({{ prop.complement }})</span>
+            }
+          </h3>
+          <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+            {{ prop.neighborhood }} — {{ prop.city }}/{{ prop.state }} • CEP: {{ prop.zipCode | cepBr }}
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-[#22222A] text-xs">
+          <div class="space-y-0.5 min-w-0">
+            <div class="text-slate-500 dark:text-zinc-400 truncate">
+              👤 Prop: <strong class="text-slate-800 dark:text-zinc-200">{{ prop.ownerName }}</strong>
+            </div>
+            <div class="text-slate-400">
+              Comissão padrão: <strong>{{ prop.defaultCommissionPercentage }}%</strong>
+            </div>
+          </div>
+
+          <div class="text-right shrink-0">
+            <span class="text-[11px] text-slate-400 block">Aluguel Sugerido</span>
+            <span class="text-sm font-bold text-slate-900 dark:text-zinc-100">
+              {{ prop.suggestedRentAmount | currency: 'BRL' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          @if (prop.status === PropertyStatus.Available) {
+            <button
+              type="button"
+              (click)="goToCreateContract(prop)"
+              class="flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white"
+            >
+              + Alugar
+            </button>
+          }
+
+          @if (prop.status !== PropertyStatus.Rented) {
+            <button
+              type="button"
+              (click)="propertiesStore.toggleMaintenance(prop)"
+              class="flex-1 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700 hover:border-amber-500"
+            >
+              {{ prop.status === PropertyStatus.Maintenance ? '✓ Liberar' : '🔧 Manut.' }}
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="openEditModal(prop)"
+            class="flex-1 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700 hover:border-[#D4A872]"
+          >
+            ✏️ Editar
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="p-8 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] text-center text-xs text-slate-400">
+        Nenhum imóvel encontrado com os filtros aplicados.
+      </div>
+    }
+  </div>
+
+  <!-- 6B. VISÃO DESKTOP (>= md): TABELA DE DADOS COMPLETA -->
   <div
-    class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
+    class="hidden md:block rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
   >
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
@@ -120,7 +205,6 @@
         <tbody class="divide-y divide-slate-200 dark:divide-[#22222A] text-xs">
           @for (prop of filteredProperties(); track prop.id) {
             <tr class="hover:bg-slate-50/80 dark:hover:bg-[#1B1B22] transition-colors">
-              <!-- Coluna 1 com Ícone Quadrado à Esquerda + Título em Negrito + Subtexto Cinza (Fiel ao Anexo 3) -->
               <td class="py-4 px-5">
                 <div class="flex items-center gap-3.5">
                   <div
@@ -212,29 +296,33 @@
   </div>
 </div>
 
-<!-- MODAL DE CADASTRO / EDIÇÃO DE IMÓVEL -->
+<!-- MODAL DE CADASTRO / EDIÇÃO DE IMÓVEL (Bottom Sheet no Celular | Modal Central no Desktop) -->
 @if (modalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
     <div
-      class="w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl overflow-hidden"
+      class="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl flex flex-col overflow-hidden"
     >
-      <div class="px-6 py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between">
-        <h2 class="text-base font-bold">
+      <div class="sm:hidden pt-2.5 pb-1 flex justify-center">
+        <div class="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700"></div>
+      </div>
+
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between shrink-0">
+        <h2 class="text-sm sm:text-base font-bold">
           {{ editingProperty() ? 'Editar Imóvel — ' + editingProperty()!.code : 'Cadastrar Novo Imóvel' }}
         </h2>
-        <button type="button" (click)="modalOpen.set(false)" class="text-slate-400 hover:text-slate-600">
+        <button type="button" (click)="modalOpen.set(false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600">
           ✕
         </button>
       </div>
 
-      <form [formGroup]="propertyForm" (ngSubmit)="saveProperty()" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <form [formGroup]="propertyForm" (ngSubmit)="saveProperty()" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
           @if (!editingProperty()) {
             <div class="sm:col-span-2">
               <label class="block text-xs font-medium mb-1">Proprietário do Imóvel *</label>
               <select
                 formControlName="ownerId"
-                class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+                class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
               >
                 <option value="">Selecione um proprietário ativo...</option>
                 @for (o of ownersStore.owners(); track o.id) {
@@ -249,14 +337,14 @@
               type="text"
               formControlName="code"
               placeholder="IMO-001"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
             <label class="block text-xs font-medium mb-1">Tipo de Imóvel *</label>
             <select
               formControlName="type"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             >
               @for (t of propertyTypes; track t.value) {
                 <option [ngValue]="t.value">{{ t.label }}</option>
@@ -265,14 +353,14 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div class="sm:col-span-2">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+          <div class="col-span-2">
             <label class="block text-xs font-medium mb-1">Rua / Logradouro *</label>
             <input
               type="text"
               formControlName="street"
               placeholder="Rua das Palmeiras"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -281,7 +369,7 @@
               type="text"
               formControlName="number"
               placeholder="450"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -291,28 +379,28 @@
               formControlName="zipCode"
               placeholder="01420000"
               maxlength="8"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+          <div class="col-span-2 sm:col-span-1">
             <label class="block text-xs font-medium mb-1">Complemento</label>
             <input
               type="text"
               formControlName="complement"
               placeholder="Apto 82 - Bloco B"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
-          <div>
+          <div class="col-span-2 sm:col-span-1">
             <label class="block text-xs font-medium mb-1">Bairro *</label>
             <input
               type="text"
               formControlName="neighborhood"
               placeholder="Jardim Paulista"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -321,7 +409,7 @@
               type="text"
               formControlName="city"
               placeholder="São Paulo"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -331,28 +419,28 @@
               formControlName="state"
               placeholder="SP"
               maxlength="2"
-              class="w-full px-3 py-2 rounded-xl text-xs uppercase bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs uppercase bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3.5 sm:gap-4">
           <div>
             <label class="block text-xs font-medium mb-1">Aluguel Sugerido (R$) *</label>
             <input
               type="number"
               step="0.01"
               formControlName="suggestedRentAmount"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
-            <label class="block text-xs font-medium mb-1">% Comissão Padrão da Imobiliária *</label>
+            <label class="block text-xs font-medium mb-1">% Comissão Imob. *</label>
             <input
               type="number"
               step="0.1"
               formControlName="defaultCommissionPercentage"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
         </div>
@@ -371,14 +459,14 @@
           <button
             type="button"
             (click)="modalOpen.set(false)"
-            class="px-4 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700"
+            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700"
           >
             Cancelar
           </button>
           <button
             type="submit"
             [disabled]="propertyForm.invalid || propertiesStore.loading()"
-            class="px-5 py-2 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
+            class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
           >
             Salvar Imóvel
           </button>
@@ -387,4 +475,3 @@
     </div>
   </div>
 }
-

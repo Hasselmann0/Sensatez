@@ -1,9 +1,9 @@
-<div class="flex items-center gap-1.5 flex-wrap">
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap max-w-full">
   @for (tab of tabs(); track tab.id) {
     <button
       type="button"
       (click)="tabChange.emit(tab.id)"
-      class="px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5"
+      class="px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap"
       [ngClass]="
         activeTab() === tab.id
           ? 'bg-slate-900 text-white dark:bg-[#262632] dark:text-zinc-100 shadow-sm border border-transparent dark:border-zinc-700'
@@ -27,4 +27,3 @@
     </button>
   }
 </div>
-

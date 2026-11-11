@@ -1,11 +1,11 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   FinancialHubStore,
   HubActiveTab,
   SemaphoreFilter
-} from '../../../application/use-cases/dashboard-hub/financial-hub.cqrs';
+} from '../../../application/use-cases/dashboard-hub/financial-hub.store';
 import { CalendarVisualStatus, ChargeStatus } from '../../../domain/enums/domain-enums';
 import { CalendarChargeItemResponse } from '../../../domain/models/rent-charge.model';
 import { ChargeAgendaCardComponent } from '../../shared/components/charge-agenda-card.component';
@@ -195,8 +195,32 @@ export class FinancialHubPageComponent implements OnInit {
     return cells;
   });
 
+  readonly selectedCalendarDay = signal<number | null>(null);
+
+  readonly activeCalendarDay = computed<number | null>(() => {
+    const explicit = this.selectedCalendarDay();
+    if (explicit !== null) return explicit;
+    const firstWithCharges = this.calendarGridCells().find(
+      c => c.dayNumber !== null && c.charges.length > 0
+    );
+    return firstWithCharges?.dayNumber ?? null;
+  });
+
+  readonly selectedDayCharges = computed<CalendarChargeItemResponse[]>(() => {
+    const day = this.activeCalendarDay();
+    if (day === null) return [];
+    const cell = this.calendarGridCells().find(c => c.dayNumber === day);
+    return cell?.charges ?? [];
+  });
+
   ngOnInit(): void {
     this.hubStore.loadAllHubData();
+  }
+
+  selectCalendarDay(dayNumber: number | null): void {
+    if (dayNumber !== null) {
+      this.selectedCalendarDay.set(dayNumber);
+    }
   }
 
   onHubTabChange(tabId: string): void {

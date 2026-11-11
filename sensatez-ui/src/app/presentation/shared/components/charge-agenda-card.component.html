@@ -1,12 +1,12 @@
 <div
   (click)="selectCharge.emit(charge().chargeId)"
-  class="group cursor-pointer rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] hover:border-[#D4A872]/60 dark:hover:border-[#D4A872]/50 p-4 transition-all shadow-sm hover:shadow-md"
+  class="group cursor-pointer rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] hover:border-[#D4A872]/60 dark:hover:border-[#D4A872]/50 p-3.5 sm:p-4 transition-all shadow-sm hover:shadow-md active:scale-[0.99]"
 >
-  <!-- Top Row: Pill de Vencimento/Tempo (Estilo "In 2h 16m" do Anexo 2) + Valor à Direita -->
-  <div class="flex items-center justify-between gap-2 mb-2.5">
-    <div class="flex items-center gap-2">
+  <!-- Top Row: Pill de Vencimento/Tempo + Valor à Direita -->
+  <div class="flex items-start sm:items-center justify-between gap-2 mb-2.5">
+    <div class="flex items-center gap-1.5 flex-wrap">
       <span
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border"
         [ngClass]="{
           'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/30':
             charge().visualStatus === VisualStatus.Paid,
@@ -19,18 +19,18 @@
         }"
       >
         <span>🕒</span>
-        <span>Vencimento: {{ charge().dueDate | date: 'dd/MM/yyyy' }}</span>
+        <span>Venc: {{ charge().dueDate | date: 'dd/MM/yyyy' }}</span>
         @if (charge().daysOverdue > 0 && charge().status !== ChargeStatus.Paid) {
           <span class="font-bold text-rose-500 dark:text-rose-400">
-            • {{ charge().daysOverdue }}d em atraso
+            • {{ charge().daysOverdue }}d atraso
           </span>
         }
       </span>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
       <div class="text-right">
-        <span class="text-base font-bold text-slate-900 dark:text-zinc-100">
+        <span class="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100">
           {{ charge().updatedTotalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}
         </span>
         @if (charge().updatedTotalAmount > charge().originalAmount) {
@@ -40,7 +40,7 @@
         }
       </div>
       <span
-        class="text-xs text-slate-400 dark:text-zinc-500 group-hover:text-[#D4A872] transition-colors"
+        class="hidden sm:inline text-xs text-slate-400 dark:text-zinc-500 group-hover:text-[#D4A872] transition-colors"
         title="Abrir Raio-X da Cobrança"
       >
         Raio-X →
@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  <!-- Middle Row: Endereço do Imóvel + Inquilino (Estilo Título da Task do Anexo 2) -->
+  <!-- Middle Row: Endereço do Imóvel + Inquilino -->
   <div class="mb-3">
     <h3 class="text-sm font-semibold text-slate-900 dark:text-zinc-100 group-hover:text-[#D4A872] transition-colors">
       {{ charge().propertyAddress }}
@@ -58,9 +58,9 @@
     </p>
   </div>
 
-  <!-- Bottom Row: Tags de Prioridade/Semáforo + Repasse + Split Proprietário (Estilo Tags Anexo 2) -->
-  <div class="flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 dark:border-[#22222B]">
-    <div class="flex items-center gap-2 flex-wrap">
+  <!-- Bottom Row: Tags de Prioridade/Semáforo + Repasse + Split Proprietário -->
+  <div class="flex items-center justify-between gap-2 flex-wrap pt-2.5 border-t border-slate-100 dark:border-[#22222B]">
+    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
       <app-status-badge
         type="visualStatus"
         [value]="charge().visualStatus"
@@ -70,13 +70,13 @@
       @if (charge().status === ChargeStatus.Paid) {
         @if (charge().isTransferredToOwner) {
           <span
-            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
           >
-            ✅ Repassado ao Proprietário
+            ✅ Repassado
           </span>
         } @else {
           <span
-            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 animate-pulse"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-semibold bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 animate-pulse"
           >
             🤝 Repasse Pix Pendente
           </span>
@@ -84,19 +84,23 @@
       }
 
       <span
-        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-[#1E1E26] text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/80"
+        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-medium bg-slate-100 dark:bg-[#1E1E26] text-slate-600 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/80"
       >
-        👤 Prop: {{ charge().ownerName }} • Líq:
+        👤 {{ charge().ownerName }} • Líq:
         <strong class="text-slate-800 dark:text-zinc-100">
           {{ charge().netOwnerAmount | currency: 'BRL' }}
         </strong>
       </span>
     </div>
 
-    <span class="text-[11px] text-slate-400 dark:text-zinc-500">
-      Comissão ({{ charge().commissionPercentage }}%):
-      {{ charge().commissionAmount | currency: 'BRL' }}
-    </span>
+    <div class="flex items-center justify-between w-full sm:w-auto pt-1 sm:pt-0">
+      <span class="text-[11px] text-slate-400 dark:text-zinc-500">
+        Comissão ({{ charge().commissionPercentage }}%):
+        {{ charge().commissionAmount | currency: 'BRL' }}
+      </span>
+      <span class="sm:hidden text-xs font-bold text-[#5C3A21] dark:text-[#D4A872]">
+        Abrir Raio-X →
+      </span>
+    </div>
   </div>
 </div>
-

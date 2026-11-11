@@ -1,13 +1,28 @@
 <div class="min-h-screen flex bg-slate-50 dark:bg-[#0D0D10] text-slate-900 dark:text-zinc-100">
-  <!-- SIDEBAR ESQUERDA (Inspirada fielmente no Anexo 2) -->
+  <!-- BACKDROP DO MENU GAVETA NO MOBILE (< lg) -->
+  @if (mobileMenuOpen()) {
+    <div
+      (click)="closeMobileMenu()"
+      class="no-print fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
+    ></div>
+  }
+
+  <!-- SIDEBAR ESQUERDA (Fixa no Desktop >= lg | Gaveta Deslizante no Mobile < lg) -->
   <aside
-    class="no-print shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-[#22222A] bg-white dark:bg-[#111115] transition-all duration-200"
-    [ngClass]="collapsed() ? 'w-20' : 'w-64'"
+    class="no-print fixed inset-y-0 left-0 z-50 lg:static shrink-0 flex flex-col justify-between border-r border-slate-200 dark:border-[#22222A] bg-white dark:bg-[#111115] transition-all duration-200 overflow-y-auto"
+    [ngClass]="[
+      mobileMenuOpen() ? 'translate-x-0 w-72 shadow-2xl' : '-translate-x-full lg:translate-x-0',
+      collapsed() ? 'lg:w-20' : 'lg:w-64'
+    ]"
   >
-    <!-- Topo da Sidebar: Logo + Collapse + Search -->
+    <!-- Topo da Sidebar: Logo + Collapse (Desktop) / Fechar (Mobile) + Search -->
     <div class="p-4 space-y-4">
       <div class="flex items-center justify-between">
-        <a routerLink="/painel" class="flex items-center gap-2.5 overflow-hidden">
+        <a
+          routerLink="/painel"
+          (click)="closeMobileMenu()"
+          class="flex items-center gap-2.5 overflow-hidden"
+        >
           <div
             class="w-9 h-9 rounded-xl bg-[#D4A872]/15 border border-[#D4A872]/40 flex items-center justify-center shrink-0"
           >
@@ -21,7 +36,7 @@
               <line x1="32" y1="32" x2="32" y2="58" stroke="currentColor" stroke-width="3" />
             </svg>
           </div>
-          @if (!collapsed()) {
+          @if (!collapsed() || mobileMenuOpen()) {
             <div class="truncate">
               <span class="text-sm font-bold tracking-wide block text-slate-900 dark:text-zinc-100">
                 Sensatez
@@ -33,18 +48,29 @@
           }
         </a>
 
+        <!-- Botão Recolher (Somente Desktop) -->
         <button
           type="button"
           (click)="collapsed.set(!collapsed())"
-          class="w-7 h-7 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 hover:text-[#D4A872] flex items-center justify-center"
+          class="hidden lg:flex w-7 h-7 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 hover:text-[#D4A872] items-center justify-center"
           title="Recolher / Expandir menu"
         >
           {{ collapsed() ? '»' : '«' }}
         </button>
+
+        <!-- Botão Fechar Gaveta (Somente Mobile) -->
+        <button
+          type="button"
+          (click)="closeMobileMenu()"
+          class="lg:hidden w-8 h-8 rounded-lg border border-slate-200 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-400 flex items-center justify-center"
+          title="Fechar menu"
+        >
+          ✕
+        </button>
       </div>
 
-      <!-- Search Input da Sidebar (Estilo "Search... ⌘F" do Anexo 2) -->
-      @if (!collapsed()) {
+      <!-- Search Input da Sidebar -->
+      @if (!collapsed() || mobileMenuOpen()) {
         <div class="relative">
           <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-400 dark:text-zinc-500">
             🔍
@@ -54,19 +80,19 @@
             [ngModel]="hubStore.searchQuery()"
             (ngModelChange)="onQuickSearch($event)"
             placeholder="Buscar aluguel ou imóvel..."
-            class="w-full pl-8 pr-10 py-2 rounded-xl text-xs bg-slate-100 dark:bg-[#191920] border border-slate-200 dark:border-[#282834] text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-[#D4A872]"
+            class="w-full pl-8 pr-10 py-2.5 rounded-xl text-xs bg-slate-100 dark:bg-[#191920] border border-slate-200 dark:border-[#282834] text-slate-800 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-[#D4A872]"
           />
           <span
-            class="absolute inset-y-0 right-2 my-auto h-5 px-1.5 rounded bg-slate-200 dark:bg-zinc-800 text-[10px] text-slate-500 dark:text-zinc-400 flex items-center"
+            class="hidden sm:flex absolute inset-y-0 right-2 my-auto h-5 px-1.5 rounded bg-slate-200 dark:bg-zinc-800 text-[10px] text-slate-500 dark:text-zinc-400 items-center"
           >
             ⌘F
           </span>
         </div>
       }
 
-      <!-- Grupo 1: Operacional & Financeiro (Telas 2, 3 e 4 unificadas na Tela Principal) -->
+      <!-- Grupo 1: Operacional & Financeiro -->
       <nav class="space-y-1">
-        @if (!collapsed()) {
+        @if (!collapsed() || mobileMenuOpen()) {
           <div class="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
             Central Financeira
           </div>
@@ -76,12 +102,12 @@
           routerLink="/painel"
           routerLinkActive="bg-slate-900 text-white dark:bg-gradient-to-r dark:from-[#23232E] dark:to-[#191922] dark:text-white border-slate-900 dark:border-zinc-700/80 shadow-sm"
           [routerLinkActiveOptions]="{ exact: true }"
-          (click)="hubStore.activeTab.set('AGENDA')"
+          (click)="hubStore.activeTab.set('AGENDA'); closeMobileMenu()"
           class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#191922] border border-transparent transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>📅</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Painel & Calendário</span>
             }
           </div>
@@ -90,11 +116,11 @@
         <button
           type="button"
           (click)="navigateToHubTab('CALENDAR_GRID')"
-          class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
+          class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>🗓️</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Grade Mensal</span>
             }
           </div>
@@ -103,15 +129,15 @@
         <button
           type="button"
           (click)="navigateToHubTab('OVERDUE')"
-          class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
+          class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>🚨</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Inadimplência</span>
             }
           </div>
-          @if (overdueCount() > 0 && !collapsed()) {
+          @if (overdueCount() > 0 && (!collapsed() || mobileMenuOpen())) {
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white">
               {{ overdueCount() }}
             </span>
@@ -121,11 +147,11 @@
         <button
           type="button"
           (click)="navigateToHubTab('EXECUTIVE')"
-          class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
+          class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-[#191922] transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>📊</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Indicadores & Alertas</span>
             }
           </div>
@@ -135,9 +161,9 @@
       <!-- Divisor -->
       <div class="border-t border-slate-200 dark:border-[#22222A]"></div>
 
-      <!-- Grupo 2: Gestão Imobiliária (Telas 5, 6, 7 e 8) -->
+      <!-- Grupo 2: Gestão Imobiliária -->
       <nav class="space-y-1">
-        @if (!collapsed()) {
+        @if (!collapsed() || mobileMenuOpen()) {
           <div class="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
             Gestão & Carteira
           </div>
@@ -145,12 +171,13 @@
 
         <a
           routerLink="/imoveis"
+          (click)="closeMobileMenu()"
           routerLinkActive="bg-slate-900 text-white dark:bg-[#23232E] dark:text-white border-slate-900 dark:border-zinc-700/80"
           class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#191922] border border-transparent transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>🏠</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Carteira de Imóveis</span>
             }
           </div>
@@ -158,12 +185,13 @@
 
         <a
           routerLink="/contratos"
+          (click)="closeMobileMenu()"
           routerLinkActive="bg-slate-900 text-white dark:bg-[#23232E] dark:text-white border-slate-900 dark:border-zinc-700/80"
           class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#191922] border border-transparent transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>📝</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Contratos de Locação</span>
             }
           </div>
@@ -171,12 +199,13 @@
 
         <a
           routerLink="/proprietarios"
+          (click)="closeMobileMenu()"
           routerLinkActive="bg-slate-900 text-white dark:bg-[#23232E] dark:text-white border-slate-900 dark:border-zinc-700/80"
           class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#191922] border border-transparent transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>👤</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Proprietários & Extrato</span>
             }
           </div>
@@ -184,12 +213,13 @@
 
         <a
           routerLink="/inquilinos"
+          (click)="closeMobileMenu()"
           routerLinkActive="bg-slate-900 text-white dark:bg-[#23232E] dark:text-white border-slate-900 dark:border-zinc-700/80"
           class="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-[#191922] border border-transparent transition-all"
         >
           <div class="flex items-center gap-2.5">
             <span>👥</span>
-            @if (!collapsed()) {
+            @if (!collapsed() || mobileMenuOpen()) {
               <span>Inquilinos</span>
             }
           </div>
@@ -197,9 +227,9 @@
       </nav>
     </div>
 
-    <!-- Rodapé da Sidebar: Ocupação da Carteira (Adaptado de "My team" do Anexo 2) + Usuário -->
+    <!-- Rodapé da Sidebar: Ocupação da Carteira + Usuário -->
     <div class="p-4 border-t border-slate-200 dark:border-[#22222A] space-y-4">
-      @if (!collapsed() && hubStore.summaryData(); as summary) {
+      @if ((!collapsed() || mobileMenuOpen()) && hubStore.summaryData(); as summary) {
         <div class="space-y-2">
           <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
             <span>Resumo da Carteira</span>
@@ -239,7 +269,7 @@
           >
             {{ (authStore.user()?.fullName || 'A').charAt(0).toUpperCase() }}
           </div>
-          @if (!collapsed()) {
+          @if (!collapsed() || mobileMenuOpen()) {
             <div class="min-w-0">
               <div class="text-xs font-semibold truncate">
                 {{ authStore.user()?.fullName || 'Administrador' }}
@@ -265,24 +295,38 @@
 
   <!-- ÁREA CENTRAL DE CONTEÚDO -->
   <div class="flex-1 flex flex-col min-w-0">
-    <!-- Topbar Global com Sino de Alertas Operacionais e Toggle de Tema -->
+    <!-- Topbar Global com Botão Menu Mobile, Sino de Alertas Operacionais e Toggle de Tema -->
     <header
-      class="no-print h-14 px-6 border-b border-slate-200 dark:border-[#22222A] bg-white/80 dark:bg-[#111115]/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-30"
+      class="no-print h-14 px-3.5 sm:px-6 border-b border-slate-200 dark:border-[#22222A] bg-white/90 dark:bg-[#111115]/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-30"
     >
-      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-zinc-400">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span>Sensatez Administração Imobiliária</span>
-        @if (hubStore.loading()) {
-          <span class="text-[#D4A872] font-medium animate-pulse">• Sincronizando dados...</span>
-        }
+      <div class="flex items-center gap-2.5 min-w-0">
+        <!-- Botão Hamburger (Apenas Mobile/Tablet < lg) -->
+        <button
+          type="button"
+          (click)="mobileMenuOpen.set(true)"
+          class="lg:hidden w-9 h-9 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#181820] flex items-center justify-center text-sm text-slate-700 dark:text-zinc-200 hover:border-[#D4A872] shrink-0"
+          title="Abrir menu de navegação"
+        >
+          ☰
+        </button>
+
+        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 truncate">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <span class="font-semibold text-slate-800 dark:text-zinc-200 sm:font-normal sm:text-slate-500 dark:sm:text-zinc-400 truncate">
+            Sensatez <span class="hidden sm:inline">Administração Imobiliária</span>
+          </span>
+          @if (hubStore.loading()) {
+            <span class="text-[#D4A872] font-medium animate-pulse shrink-0">• Sincronizando...</span>
+          }
+        </div>
       </div>
 
-      <div class="flex items-center gap-3 relative">
+      <div class="flex items-center gap-2 sm:gap-3 relative shrink-0">
         <!-- Botão Sino de Alertas Operacionais (GET /api/dashboard/alerts) -->
         <button
           type="button"
           (click)="alertsPopoverOpen.set(!alertsPopoverOpen())"
-          class="relative px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#181820] text-xs font-medium flex items-center gap-2 hover:border-[#D4A872] transition-colors"
+          class="relative px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#181820] text-xs font-medium flex items-center gap-1.5 sm:gap-2 hover:border-[#D4A872] transition-colors"
         >
           <span>🔔</span>
           <span class="hidden sm:inline">Alertas Operacionais</span>
@@ -298,15 +342,15 @@
           type="button"
           (click)="themeService.toggleTheme()"
           class="w-9 h-9 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-[#181820] flex items-center justify-center text-sm hover:border-[#D4A872] transition-colors"
-          title="Alternar modo Escuro (Anexo 2) / Claro (Anexo 3)"
+          title="Alternar modo Escuro / Claro"
         >
           {{ themeService.isDark() ? '☀️' : '🌙' }}
         </button>
 
-        <!-- Popover Rápido do Sino de Alertas -->
+        <!-- Popover Rápido do Sino de Alertas (Responsivo no Celular e Desktop) -->
         @if (alertsPopoverOpen() && hubStore.alertsData(); as alerts) {
           <div
-            class="absolute right-0 top-12 w-96 max-h-[80vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#16161D] shadow-2xl p-4 z-50 space-y-3"
+            class="fixed inset-x-3 top-16 sm:inset-x-auto sm:absolute sm:right-0 sm:top-12 sm:w-96 max-h-[80vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#16161D] shadow-2xl p-4 z-50 space-y-3"
           >
             <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
               <span class="text-xs font-bold uppercase tracking-wider text-[#D4A872]">
@@ -315,30 +359,30 @@
               <button
                 type="button"
                 (click)="alertsPopoverOpen.set(false)"
-                class="text-xs text-slate-400 hover:text-slate-600"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-slate-400 hover:text-slate-600"
               >
                 ✕
               </button>
             </div>
 
             <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <span>🤝 Repasses Pix Pendentes</span>
                 <span class="font-bold text-amber-500">{{ alerts.pendingOwnerTransfers.length }}</span>
               </div>
-              <div class="flex items-center justify-between p-2 rounded-lg bg-rose-500/10 border border-rose-500/20">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20">
                 <span>🔴 Aluguéis em Atraso</span>
                 <span class="font-bold text-rose-500">{{ alerts.overdueCharges.length }}</span>
               </div>
-              <div class="flex items-center justify-between p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <span>🟡 Vencendo em até 5 dias</span>
                 <span class="font-bold text-yellow-500">{{ alerts.dueSoonCharges.length }}</span>
               </div>
-              <div class="flex items-center justify-between p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <span>⏳ Contratos vencendo (45d)</span>
                 <span class="font-bold text-blue-400">{{ alerts.expiringContracts.length }}</span>
               </div>
-              <div class="flex items-center justify-between p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+              <div class="flex items-center justify-between p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
                 <span>📈 Aniversário de Reajuste</span>
                 <span class="font-bold text-purple-400">{{ alerts.readjustmentEligibleContracts.length }}</span>
               </div>
@@ -347,7 +391,7 @@
             <button
               type="button"
               (click)="alertsPopoverOpen.set(false); navigateToHubTab('EXECUTIVE')"
-              class="w-full py-2 rounded-xl text-xs font-semibold bg-[#D4A872] text-zinc-950 hover:brightness-105"
+              class="w-full py-2.5 rounded-xl text-xs font-semibold bg-[#D4A872] text-zinc-950 hover:brightness-105"
             >
               Abrir Central de Alertas Completa
             </button>
@@ -356,10 +400,91 @@
       </div>
     </header>
 
-    <!-- Conteúdo da Rota Ativa -->
-    <main class="flex-1 p-6 lg:p-8 overflow-x-hidden">
+    <!-- Conteúdo da Rota Ativa (Com espaçamento inferior extra no mobile para a Bottom Bar) -->
+    <main class="flex-1 p-3.5 sm:p-6 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
       <router-outlet />
     </main>
+
+    <!-- BARRA DE NAVEGAÇÃO INFERIOR FIXA (Exclusiva para Celular / Tablet < lg) -->
+    <nav
+      class="no-print lg:hidden fixed bottom-0 inset-x-0 h-16 px-2 border-t border-slate-200 dark:border-[#22222A] bg-white/95 dark:bg-[#111115]/95 backdrop-blur-md grid grid-cols-5 items-center text-center z-30 shadow-lg"
+    >
+      <button
+        type="button"
+        (click)="navigateToHubTab('AGENDA')"
+        class="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl transition-colors"
+        [ngClass]="
+          isRouteActive('/painel') && hubStore.activeTab() !== 'OVERDUE'
+            ? 'text-[#5C3A21] dark:text-[#D4A872] font-bold'
+            : 'text-slate-500 dark:text-zinc-400'
+        "
+      >
+        <span class="text-base leading-none">📅</span>
+        <span class="text-[11px]">Painel</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="navigateToHubTab('OVERDUE')"
+        class="relative flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl transition-colors"
+        [ngClass]="
+          isRouteActive('/painel') && hubStore.activeTab() === 'OVERDUE'
+            ? 'text-rose-500 font-bold'
+            : 'text-slate-500 dark:text-zinc-400'
+        "
+      >
+        <span class="text-base leading-none">🚨</span>
+        <span class="text-[11px]">Atrasos</span>
+        @if (overdueCount() > 0) {
+          <span
+            class="absolute top-0.5 right-3 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center"
+          >
+            {{ overdueCount() }}
+          </span>
+        }
+      </button>
+
+      <a
+        routerLink="/imoveis"
+        (click)="closeMobileMenu()"
+        class="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl transition-colors"
+        [ngClass]="
+          isRouteActive('/imoveis')
+            ? 'text-[#5C3A21] dark:text-[#D4A872] font-bold'
+            : 'text-slate-500 dark:text-zinc-400'
+        "
+      >
+        <span class="text-base leading-none">🏠</span>
+        <span class="text-[11px]">Imóveis</span>
+      </a>
+
+      <a
+        routerLink="/contratos"
+        (click)="closeMobileMenu()"
+        class="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl transition-colors"
+        [ngClass]="
+          isRouteActive('/contratos')
+            ? 'text-[#5C3A21] dark:text-[#D4A872] font-bold'
+            : 'text-slate-500 dark:text-zinc-400'
+        "
+      >
+        <span class="text-base leading-none">📝</span>
+        <span class="text-[11px]">Contratos</span>
+      </a>
+
+      <button
+        type="button"
+        (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+        class="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl transition-colors"
+        [ngClass]="
+          mobileMenuOpen() || isRouteActive('/proprietarios') || isRouteActive('/inquilinos')
+            ? 'text-[#5C3A21] dark:text-[#D4A872] font-bold'
+            : 'text-slate-500 dark:text-zinc-400'
+        "
+      >
+        <span class="text-base leading-none">☰</span>
+        <span class="text-[11px]">Menu</span>
+      </button>
+    </nav>
   </div>
 </div>
-

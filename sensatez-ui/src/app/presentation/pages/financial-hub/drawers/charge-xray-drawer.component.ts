@@ -1,7 +1,7 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { FinancialHubStore } from '../../../../application/use-cases/dashboard-hub/financial-hub.cqrs';
+import { FinancialHubStore } from '../../../../application/use-cases/dashboard-hub/financial-hub.store';
 import { ChargeStatus } from '../../../../domain/enums/domain-enums';
 import {
   PixCopyButtonComponent,

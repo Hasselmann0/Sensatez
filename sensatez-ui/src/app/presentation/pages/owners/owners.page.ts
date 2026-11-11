@@ -2,7 +2,7 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { OwnersStore } from '../../../application/use-cases/owners/owners.cqrs';
+import { OwnersStore } from '../../../application/use-cases/owners/owners.store';
 import { OwnerResponse } from '../../../domain/models/owner.model';
 import { DocumentValidator } from '../../../domain/validators/document.validator';
 import { CpfCnpjPipe, PhoneBrPipe } from '../../pipes/format.pipes';

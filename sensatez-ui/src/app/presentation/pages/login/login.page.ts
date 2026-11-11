@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CommandBus } from '../../../application/cqrs/cqrs-bus';
-import { AuthStore, LoginCommand } from '../../../application/use-cases/auth/auth.cqrs';
+import { AuthStore } from '../../../application/use-cases/auth/auth.store';
 import { ThemeService } from '../../../infrastructure/storage/theme.service';
 
 @Component({
@@ -16,7 +15,6 @@ import { ThemeService } from '../../../infrastructure/storage/theme.service';
 })
 export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly commandBus = inject(CommandBus);
   private readonly router = inject(Router);
   readonly authStore = inject(AuthStore);
   readonly themeService = inject(ThemeService);
@@ -42,10 +40,8 @@ export class LoginPageComponent {
     }
 
     const { email, password } = this.loginForm.getRawValue();
-    this.commandBus.dispatch(new LoginCommand({ email, password })).subscribe({
-      next: () => {
-        this.router.navigate(['/painel']);
-      }
+    this.authStore.login({ email, password }, () => {
+      this.router.navigate(['/painel']);
     });
   }
 }

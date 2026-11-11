@@ -1,32 +1,40 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import {
-  AuthRepository,
-  ChargeRepository,
-  ContractRepository,
-  DashboardRepository,
-  OwnerRepository,
-  PropertyRepository,
-  TenantRepository
-} from '../../domain/repositories/repositories.tokens';
+  AuthPort,
+  ChargePort,
+  ContractPort,
+  DashboardPort,
+  NotificationPort,
+  OwnerPort,
+  PropertyPort,
+  SessionStoragePort,
+  TenantPort
+} from '../../domain/ports/ports.tokens';
 import {
-  HttpAuthRepository,
-  HttpChargeRepository,
-  HttpContractRepository,
-  HttpDashboardRepository,
-  HttpOwnerRepository,
-  HttpPropertyRepository,
-  HttpTenantRepository
-} from '../repositories/http-repositories';
+  HttpAuthAdapter,
+  HttpChargeAdapter,
+  HttpContractAdapter,
+  HttpDashboardAdapter,
+  HttpOwnerAdapter,
+  HttpPropertyAdapter,
+  HttpTenantAdapter
+} from '../adapters/http/http-adapters';
+import { ToastNotificationAdapter } from '../adapters/notification/toast-notification.adapter';
+import { LocalStorageSessionAdapter } from '../adapters/storage/local-storage-session.adapter';
 
-export function provideInfrastructureRepositories(): EnvironmentProviders {
+export function provideInfrastructureAdapters(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    { provide: AuthRepository, useExisting: HttpAuthRepository },
-    { provide: OwnerRepository, useExisting: HttpOwnerRepository },
-    { provide: TenantRepository, useExisting: HttpTenantRepository },
-    { provide: PropertyRepository, useExisting: HttpPropertyRepository },
-    { provide: ContractRepository, useExisting: HttpContractRepository },
-    { provide: ChargeRepository, useExisting: HttpChargeRepository },
-    { provide: DashboardRepository, useExisting: HttpDashboardRepository }
+    // HTTP Driven Adapters (API REST)
+    { provide: AuthPort, useExisting: HttpAuthAdapter },
+    { provide: OwnerPort, useExisting: HttpOwnerAdapter },
+    { provide: TenantPort, useExisting: HttpTenantAdapter },
+    { provide: PropertyPort, useExisting: HttpPropertyAdapter },
+    { provide: ContractPort, useExisting: HttpContractAdapter },
+    { provide: ChargePort, useExisting: HttpChargeAdapter },
+    { provide: DashboardPort, useExisting: HttpDashboardAdapter },
+
+    // Browser & UI Driven Adapters (Storage & Notifications)
+    { provide: SessionStoragePort, useExisting: LocalStorageSessionAdapter },
+    { provide: NotificationPort, useExisting: ToastNotificationAdapter }
   ]);
 }
-

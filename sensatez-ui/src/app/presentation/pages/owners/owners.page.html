@@ -1,20 +1,20 @@
-<div class="space-y-6 no-print">
-  <!-- 1. CABEÇALHO ESTILO ANEXO 3 -->
-  <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-zinc-100">
-      Proprietários & Extrato de Repasses
+<div class="space-y-4 sm:space-y-6 no-print">
+  <!-- 1. CABEÇALHO -->
+  <div class="flex items-center justify-between gap-3">
+    <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100">
+      Proprietários & Extrato
     </h1>
     <button
       type="button"
       (click)="openCreateModal()"
-      class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 hover:brightness-105 transition-all"
+      class="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 hover:brightness-105 transition-all shrink-0"
     >
-      Novo proprietário
+      + Novo proprietário
     </button>
   </div>
 
   <!-- 2. ABAS -->
-  <div class="space-y-3">
+  <div class="space-y-2.5 sm:space-y-3">
     <app-underline-tabs
       [tabs]="ownerTabs()"
       [activeTab]="selectedTab()"
@@ -40,9 +40,92 @@
   <!-- 4. FAIXA DE RESUMO -->
   <app-status-summary-strip [items]="summaryStripItems()" />
 
-  <!-- 5. TABELA DE PROPRIETÁRIOS ESTILO ANEXO 3 -->
+  <!-- 5A. VISÃO MOBILE (< md): CARDS VERTICAIS DE PROPRIETÁRIOS -->
+  <div class="md:hidden space-y-3">
+    @for (owner of filteredOwners(); track owner.id) {
+      <div
+        class="p-4 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] shadow-sm space-y-3"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="w-10 h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-[#1E1E26] flex items-center justify-center font-bold text-sm text-[#D4A872] shrink-0"
+            >
+              {{ owner.fullName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
+                {{ owner.fullName }}
+              </h3>
+              <div class="text-xs text-slate-400 font-mono">
+                {{ owner.document | cpfCnpj }}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="goToOwnerProperties(owner.id)"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/15 text-blue-500 border border-blue-500/30 shrink-0"
+          >
+            🏠 {{ owner.propertiesCount }} imóveis
+          </button>
+        </div>
+
+        <div class="space-y-1.5 text-xs pt-2 border-t border-slate-100 dark:border-[#22222A]">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-slate-500 dark:text-zinc-400 truncate">{{ owner.email }}</span>
+            <app-whatsapp-button [phone]="owner.phone" label="WhatsApp" />
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#1B1B22] space-y-1.5">
+            <div class="text-slate-600 dark:text-zinc-300 text-[11px]">
+              🏦 {{ owner.bankName || 'Banco não inf.' }}
+              @if (owner.bankAgency || owner.bankAccount) {
+                <span> • Ag: {{ owner.bankAgency }} / Cc: {{ owner.bankAccount }}</span>
+              }
+            </div>
+            <app-pix-copy-button [pixKey]="owner.pixKey" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            (click)="openStatementModal(owner)"
+            class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#D4A872] text-zinc-950 hover:brightness-105"
+          >
+            📄 Extrato Mensal
+          </button>
+          <button
+            type="button"
+            (click)="openEditModal(owner)"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700"
+          >
+            ✏️ Editar
+          </button>
+          @if (owner.isActive) {
+            <button
+              type="button"
+              (click)="ownersStore.deactivateOwner(owner.id)"
+              class="px-3 py-2.5 rounded-xl text-xs text-rose-500 border border-rose-500/30 hover:bg-rose-500/10"
+              title="Inativar Proprietário"
+            >
+              🚫
+            </button>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="p-8 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] text-center text-xs text-slate-400">
+        Nenhum proprietário encontrado.
+      </div>
+    }
+  </div>
+
+  <!-- 5B. VISÃO DESKTOP (>= md): TABELA DE PROPRIETÁRIOS COMPLETA -->
   <div
-    class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
+    class="hidden md:block rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
   >
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
@@ -144,27 +227,31 @@
   </div>
 </div>
 
-<!-- MODAL DE CADASTRO / EDIÇÃO DE PROPRIETÁRIO -->
+<!-- MODAL DE CADASTRO / EDIÇÃO DE PROPRIETÁRIO (Bottom Sheet no Celular | Modal no Desktop) -->
 @if (formModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 no-print">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 no-print">
     <div
-      class="w-full max-w-xl rounded-2xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl overflow-hidden"
+      class="w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl flex flex-col overflow-hidden"
     >
-      <div class="px-6 py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between">
-        <h2 class="text-base font-bold">
-          {{ editingOwner() ? 'Editar Proprietário' : 'Novo Proprietário' }}
-        </h2>
-        <button type="button" (click)="formModalOpen.set(false)" class="text-slate-400">✕</button>
+      <div class="sm:hidden pt-2.5 pb-1 flex justify-center">
+        <div class="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700"></div>
       </div>
 
-      <form [formGroup]="ownerForm" (ngSubmit)="saveOwner()" class="p-6 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between shrink-0">
+        <h2 class="text-sm sm:text-base font-bold">
+          {{ editingOwner() ? 'Editar Proprietário' : 'Novo Proprietário' }}
+        </h2>
+        <button type="button" (click)="formModalOpen.set(false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400">✕</button>
+      </div>
+
+      <form [formGroup]="ownerForm" (ngSubmit)="saveOwner()" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
           <div>
             <label class="block text-xs font-medium mb-1">Nome Completo / Razão Social *</label>
             <input
               type="text"
               formControlName="fullName"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -174,7 +261,7 @@
               formControlName="document"
               [readonly]="!!editingOwner()"
               placeholder="Somente números"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
             />
             @if (ownerForm.controls.document.touched && ownerForm.controls.document.errors?.['invalidDocument']) {
               <span class="text-[10px] text-rose-500">CPF ou CNPJ matematicamente inválido.</span>
@@ -182,13 +269,13 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
           <div>
             <label class="block text-xs font-medium mb-1">E-mail *</label>
             <input
               type="email"
               formControlName="email"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -197,7 +284,7 @@
               type="text"
               formControlName="phone"
               placeholder="11999998888"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
         </div>
@@ -208,7 +295,7 @@
             <input
               type="text"
               formControlName="pixKey"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -217,23 +304,23 @@
               type="text"
               formControlName="bankName"
               placeholder="Banco Inter"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
             <label class="block text-xs font-medium mb-1">Agência / Conta</label>
-            <div class="flex gap-1">
+            <div class="flex gap-1.5">
               <input
                 type="text"
                 formControlName="bankAgency"
                 placeholder="0001"
-                class="w-1/2 px-2 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+                class="w-1/2 px-2.5 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
               />
               <input
                 type="text"
                 formControlName="bankAccount"
                 placeholder="12345-6"
-                class="w-1/2 px-2 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+                class="w-1/2 px-2.5 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
               />
             </div>
           </div>
@@ -245,7 +332,7 @@
             type="text"
             formControlName="notes"
             placeholder="Ex: Prefere receber repasse todo dia 15 via Pix."
-            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+            class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
           />
         </div>
 
@@ -253,14 +340,14 @@
           <button
             type="button"
             (click)="formModalOpen.set(false)"
-            class="px-4 py-2 rounded-xl text-xs border border-slate-200 dark:border-zinc-700"
+            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs border border-slate-200 dark:border-zinc-700"
           >
             Cancelar
           </button>
           <button
             type="submit"
             [disabled]="ownerForm.invalid || ownersStore.loading()"
-            class="px-5 py-2 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
+            class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
           >
             Salvar Proprietário
           </button>
@@ -272,17 +359,17 @@
 
 <!-- 🌟 MODAL / DEMONSTRATIVO CONTÁBIL: EXTRATO MENSAL DE REPASSE DO PROPRIETÁRIO (PRONTO P/ PDF) -->
 @if (statementModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto">
     <div
-      class="print-area w-full max-w-4xl rounded-2xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#14141A] shadow-2xl overflow-hidden my-8"
+      class="print-area w-full max-w-4xl max-h-[94vh] sm:max-h-none overflow-y-auto rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#14141A] shadow-2xl sm:my-8"
     >
       <!-- Barra de Controles (Não sai na impressão) -->
       <div
-        class="no-print px-6 py-4 border-b border-slate-200 dark:border-[#262632] bg-slate-50 dark:bg-[#191922] flex items-center justify-between flex-wrap gap-3"
+        class="no-print px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-[#262632] bg-slate-50 dark:bg-[#191922] flex items-center justify-between flex-wrap gap-2.5 sticky top-0 z-10"
       >
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <span class="text-xs font-bold uppercase tracking-wider text-[#D4A872]">
-            📄 Extrato Mensal de Repasse
+            📄 Extrato Mensal
           </span>
           <input
             type="number"
@@ -290,23 +377,23 @@
             max="12"
             [(ngModel)]="statementMonth"
             (change)="reloadStatement()"
-            class="w-16 px-2 py-1 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
+            class="w-14 px-2 py-1.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
           />
           <input
             type="number"
             [(ngModel)]="statementYear"
             (change)="reloadStatement()"
-            class="w-24 px-2 py-1 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
+            class="w-20 px-2 py-1.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
           />
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button
             type="button"
             (click)="printStatement()"
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-[#D4A872] text-zinc-950 hover:brightness-105"
+            class="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-[#D4A872] text-zinc-950 hover:brightness-105"
           >
-            🖨️ Imprimir / Salvar PDF
+            🖨️ Imprimir / PDF
           </button>
           <button
             type="button"
@@ -320,11 +407,11 @@
 
       <!-- Corpo do Demonstrativo Contábil -->
       @if (ownersStore.currentStatement(); as st) {
-        <div class="p-8 space-y-6">
+        <div class="p-4 sm:p-8 space-y-5 sm:space-y-6">
           <!-- Cabeçalho do Demonstrativo -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-zinc-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 border-b border-slate-200 dark:border-zinc-800">
             <div>
-              <h2 class="text-xl font-bold">
+              <h2 class="text-base sm:text-xl font-bold">
                 Demonstrativo Mensal de Locação e Repasse
               </h2>
               <p class="text-xs text-slate-500 dark:text-zinc-400">
@@ -344,33 +431,75 @@
           </div>
 
           <!-- 4 Totais do Proprietário no Mês -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-4 rounded-xl border border-slate-200 dark:border-zinc-800">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div class="p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-zinc-800">
               <span class="text-[11px] text-slate-400 block">Total Bruto Recebido</span>
-              <span class="text-lg font-bold">{{ st.totalGrossReceived | currency: 'BRL' }}</span>
+              <span class="text-base sm:text-lg font-bold">{{ st.totalGrossReceived | currency: 'BRL' }}</span>
             </div>
-            <div class="p-4 rounded-xl border border-slate-200 dark:border-zinc-800">
-              <span class="text-[11px] text-slate-400 block">(-) Comissão Imobiliária</span>
-              <span class="text-lg font-bold text-rose-500">
+            <div class="p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-zinc-800">
+              <span class="text-[11px] text-slate-400 block">(-) Comissão Imob.</span>
+              <span class="text-base sm:text-lg font-bold text-rose-500">
                 {{ st.totalCommissionRetained | currency: 'BRL' }}
               </span>
             </div>
-            <div class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
-              <span class="text-[11px] text-amber-500 block">Líquido Pendente de Repasse</span>
-              <span class="text-lg font-bold text-amber-500">
+            <div class="p-3 sm:p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+              <span class="text-[11px] text-amber-500 block">Líquido Pendente</span>
+              <span class="text-base sm:text-lg font-bold text-amber-500">
                 {{ st.totalNetPendingTransfer | currency: 'BRL' }}
               </span>
             </div>
-            <div class="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-              <span class="text-[11px] text-emerald-500 block">Líquido Já Repassado</span>
-              <span class="text-lg font-bold text-emerald-500">
+            <div class="p-3 sm:p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+              <span class="text-[11px] text-emerald-500 block">Líquido Repassado</span>
+              <span class="text-base sm:text-lg font-bold text-emerald-500">
                 {{ st.totalNetTransferred | currency: 'BRL' }}
               </span>
             </div>
           </div>
 
-          <!-- Tabela Discriminando Imóvel por Imóvel -->
-          <div class="rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+          <!-- Visão Mobile dos Itens do Extrato (< sm e oculto no print) -->
+          <div class="sm:hidden no-print space-y-2.5">
+            @for (item of st.items; track item.chargeId) {
+              <div class="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-2 text-xs">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <div class="font-bold">{{ item.propertyAddress }}</div>
+                    <div class="text-[11px] text-slate-400">Inq: {{ item.tenantName }}</div>
+                  </div>
+                  <span class="text-[11px] text-slate-400 shrink-0">{{ item.dueDate | date: 'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800 text-[11px]">
+                  <div>
+                    <span class="text-slate-400 block">Bruto</span>
+                    <strong>{{ item.grossRentAmount | currency: 'BRL' }}</strong>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 block">Comissão ({{ item.commissionPercentage }}%)</span>
+                    <strong class="text-rose-500">-{{ item.commissionAmount | currency: 'BRL' }}</strong>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-slate-400 block">Líquido</span>
+                    <strong class="text-emerald-500">{{ item.netOwnerAmount | currency: 'BRL' }}</strong>
+                  </div>
+                </div>
+                <div class="pt-1">
+                  @if (item.isTransferredToOwner) {
+                    <span class="font-semibold text-emerald-500">
+                      ✅ Repassado em {{ item.transferredToOwnerAt | date: 'dd/MM/yyyy' }}
+                    </span>
+                  } @else {
+                    <span class="font-semibold text-amber-500">⏳ Pendente de Repasse</span>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="p-6 text-center text-xs text-slate-400">
+                Nenhuma cobrança registrada para este proprietário na competência selecionada.
+              </div>
+            }
+          </div>
+
+          <!-- Tabela Discriminando Imóvel por Imóvel (Desktop e Impressão PDF) -->
+          <div class="hidden sm:block rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-100 dark:bg-[#191922] text-[11px] uppercase text-slate-500">
                 <tr>
@@ -422,4 +551,3 @@
     </div>
   </div>
 }
-

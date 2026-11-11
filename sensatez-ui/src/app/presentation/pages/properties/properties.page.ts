@@ -2,8 +2,8 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { OwnersStore } from '../../../application/use-cases/owners/owners.cqrs';
-import { PropertiesStore } from '../../../application/use-cases/properties/properties.cqrs';
+import { OwnersStore } from '../../../application/use-cases/owners/owners.store';
+import { PropertiesStore } from '../../../application/use-cases/properties/properties.store';
 import {
   PROPERTY_TYPE_META,
   PropertyStatus,

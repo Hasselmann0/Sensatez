@@ -1,23 +1,26 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-zinc-100">
+<div class="space-y-4 sm:space-y-6">
+  <!-- 1. CABEÇALHO -->
+  <div class="flex items-center justify-between gap-3">
+    <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-zinc-100">
       Cadastro de Inquilinos
     </h1>
     <button
       type="button"
       (click)="openCreateModal()"
-      class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 hover:brightness-105 transition-all"
+      class="px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 hover:brightness-105 transition-all shrink-0"
     >
-      Novo inquilino
+      + Novo inquilino
     </button>
   </div>
 
+  <!-- 2. ABAS -->
   <app-underline-tabs
     [tabs]="tenantTabs()"
     [activeTab]="selectedTab()"
     (tabChange)="selectedTab.set($event)"
   />
 
+  <!-- 3. BUSCA -->
   <div class="relative w-full sm:max-w-sm">
     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">🔍</span>
     <input
@@ -29,8 +32,79 @@
     />
   </div>
 
+  <!-- 4A. VISÃO MOBILE (< md): CARDS VERTICAIS DE INQUILINOS -->
+  <div class="md:hidden space-y-3">
+    @for (t of filteredTenants(); track t.id) {
+      <div
+        class="p-4 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] shadow-sm space-y-3"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="w-10 h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-[#1E1E26] flex items-center justify-center font-bold text-sm text-[#D4A872] shrink-0"
+            >
+              {{ t.fullName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
+                {{ t.fullName }}
+              </h3>
+              <div class="text-xs text-slate-400 font-mono">
+                {{ t.document | cpfCnpj }}
+              </div>
+            </div>
+          </div>
+
+          <app-whatsapp-button [phone]="t.phone" label="WhatsApp" />
+        </div>
+
+        <div class="space-y-1 text-xs pt-2 border-t border-slate-100 dark:border-[#22222A]">
+          <div class="text-slate-600 dark:text-zinc-300">✉️ {{ t.email }}</div>
+          <div class="text-slate-500 dark:text-zinc-400">📱 {{ t.phone | phoneBr }}</div>
+          @if (t.additionalInfo) {
+            <div class="text-[11px] text-slate-400 italic pt-1">
+              "{{ t.additionalInfo }}"
+            </div>
+          }
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            (click)="openHistoryDrawer(t)"
+            class="flex-1 py-2.5 rounded-xl text-xs font-bold bg-slate-900 text-white dark:bg-zinc-800"
+          >
+            📋 Contratos
+          </button>
+          <button
+            type="button"
+            (click)="openEditModal(t)"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-700"
+          >
+            ✏️ Editar
+          </button>
+          @if (t.isActive) {
+            <button
+              type="button"
+              (click)="tenantsStore.deactivateTenant(t.id)"
+              class="px-3 py-2.5 rounded-xl text-xs text-rose-500 border border-rose-500/30 hover:bg-rose-500/10"
+              title="Inativar Inquilino"
+            >
+              🚫
+            </button>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="p-8 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] text-center text-xs text-slate-400">
+        Nenhum inquilino encontrado.
+      </div>
+    }
+  </div>
+
+  <!-- 4B. VISÃO DESKTOP (>= md): TABELA DE INQUILINOS COMPLETA -->
   <div
-    class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
+    class="hidden md:block rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
   >
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse">
@@ -108,26 +182,30 @@
   </div>
 </div>
 
-<!-- MODAL DE CADASTRO / EDIÇÃO DE INQUILINO -->
+<!-- MODAL DE CADASTRO / EDIÇÃO DE INQUILINO (Bottom Sheet no Celular | Modal no Desktop) -->
 @if (formModalOpen()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
     <div
-      class="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl overflow-hidden"
+      class="w-full max-w-lg max-h-[92vh] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] shadow-2xl flex flex-col overflow-hidden"
     >
-      <div class="px-6 py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between">
-        <h2 class="text-base font-bold">
-          {{ editingTenant() ? 'Editar Inquilino' : 'Novo Inquilino' }}
-        </h2>
-        <button type="button" (click)="formModalOpen.set(false)" class="text-slate-400">✕</button>
+      <div class="sm:hidden pt-2.5 pb-1 flex justify-center">
+        <div class="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700"></div>
       </div>
 
-      <form [formGroup]="tenantForm" (ngSubmit)="saveTenant()" class="p-6 space-y-4">
+      <div class="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-[#262632] flex items-center justify-between shrink-0">
+        <h2 class="text-sm sm:text-base font-bold">
+          {{ editingTenant() ? 'Editar Inquilino' : 'Novo Inquilino' }}
+        </h2>
+        <button type="button" (click)="formModalOpen.set(false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400">✕</button>
+      </div>
+
+      <form [formGroup]="tenantForm" (ngSubmit)="saveTenant()" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
         <div>
           <label class="block text-xs font-medium mb-1">Nome Completo *</label>
           <input
             type="text"
             formControlName="fullName"
-            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+            class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
           />
         </div>
 
@@ -137,20 +215,20 @@
             type="text"
             formControlName="document"
             [readonly]="!!editingTenant()"
-            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
+            class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
           />
           @if (tenantForm.controls.document.touched && tenantForm.controls.document.errors?.['invalidDocument']) {
             <span class="text-[10px] text-rose-500">CPF ou CNPJ inválido.</span>
           }
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <label class="block text-xs font-medium mb-1">E-mail *</label>
             <input
               type="email"
               formControlName="email"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
           <div>
@@ -158,7 +236,7 @@
             <input
               type="text"
               formControlName="phone"
-              class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
+              class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
         </div>
@@ -177,14 +255,14 @@
           <button
             type="button"
             (click)="formModalOpen.set(false)"
-            class="px-4 py-2 rounded-xl text-xs border border-slate-200 dark:border-zinc-700"
+            class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs border border-slate-200 dark:border-zinc-700"
           >
             Cancelar
           </button>
           <button
             type="submit"
             [disabled]="tenantForm.invalid || tenantsStore.loading()"
-            class="px-5 py-2 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
+            class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold bg-[#5C3A21] dark:bg-[#D4A872] text-white dark:text-zinc-950 disabled:opacity-50"
           >
             Salvar Inquilino
           </button>
@@ -194,18 +272,22 @@
   </div>
 }
 
-<!-- DRAWER DE HISTÓRICO DE CONTRATOS DO INQUILINO (GET /api/contracts?tenantId={id}) -->
+<!-- DRAWER / BOTTOM SHEET DE HISTÓRICO DE CONTRATOS DO INQUILINO -->
 @if (historyDrawerOpen() && selectedTenantForHistory(); as tenant) {
-  <div class="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
+  <div class="fixed inset-0 z-50 flex items-end sm:items-stretch justify-end bg-black/60 backdrop-blur-sm">
     <div
-      class="w-full max-w-lg h-full bg-white dark:bg-[#14141A] border-l border-slate-200 dark:border-[#262632] shadow-2xl p-6 space-y-4 overflow-y-auto"
+      class="w-full sm:max-w-lg max-h-[88vh] sm:max-h-full sm:h-full rounded-t-3xl sm:rounded-none bg-white dark:bg-[#14141A] border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-[#262632] shadow-2xl p-4 sm:p-6 space-y-4 overflow-y-auto"
     >
+      <div class="sm:hidden pb-1 flex justify-center">
+        <div class="w-12 h-1.5 rounded-full bg-slate-300 dark:bg-zinc-700"></div>
+      </div>
+
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <span class="text-[11px] font-bold uppercase text-[#D4A872]">Histórico de Locações</span>
-          <h2 class="text-base font-bold">{{ tenant.fullName }}</h2>
+          <h2 class="text-sm sm:text-base font-bold">{{ tenant.fullName }}</h2>
         </div>
-        <button type="button" (click)="historyDrawerOpen.set(false)">✕</button>
+        <button type="button" (click)="historyDrawerOpen.set(false)" class="w-8 h-8 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-sm">✕</button>
       </div>
 
       @for (c of contractsStore.contracts(); track c.id) {
@@ -227,4 +309,3 @@
     </div>
   </div>
 }
-

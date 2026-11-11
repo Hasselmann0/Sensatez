@@ -1,10 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { TokenStorageService } from '../storage/token-storage.service';
+import { SessionStoragePort } from '../../domain/ports/session-storage.port';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenStorage = inject(TokenStorageService);
-  const token = tokenStorage.getToken();
+  const sessionStorage = inject(SessionStoragePort);
+  const token = sessionStorage.getToken();
 
   if (token && !req.url.endsWith('/auth/login')) {
     const authReq = req.clone({
@@ -17,4 +17,3 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req);
 };
-

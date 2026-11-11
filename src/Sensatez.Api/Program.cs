@@ -63,24 +63,13 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<SensatezDbContext>();
-    dbContext.Database.Migrate();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    await DatabaseSeeder.SeedAsync(dbContext, passwordHasher, builder.Configuration);
+}
 
-    var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-    if (!await userRepository.AnyAsync())
-    {
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-        var adminName = builder.Configuration["AdminSeed:FullName"] ?? "Administrador Sensatez";
-        var adminEmail = builder.Configuration["AdminSeed:Email"] ?? "admin@sensatez.com.br";
-        var adminPassword = builder.Configuration["AdminSeed:Password"] ?? "Admin@2026!";
-
-        await userRepository.AddAsync(new User
-        {
-            FullName = adminName,
-            Email = adminEmail,
-            PasswordHash = passwordHasher.Hash(adminPassword),
-            IsActive = true
-        });
-    }
+if (args.Contains("--seed-only", StringComparer.OrdinalIgnoreCase))
+{
+    return;
 }
 
 // Configure the HTTP request pipeline.

@@ -5,25 +5,19 @@ import {
   PropertyResponse,
   UpdatePropertyRequest
 } from '../../../domain/models/property.model';
-import { CommandBus, QueryBus } from '../../cqrs/cqrs-bus';
-import {
-  CreatePropertyCommand,
-  GetPropertiesQuery,
-  UpdatePropertyCommand,
-  UpdatePropertyStatusCommand
-} from './properties.cqrs';
+import { NotificationPort, PropertyPort } from '../../../domain/ports/ports.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class PropertiesStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
+  private readonly propertyPort = inject(PropertyPort);
+  private readonly notification = inject(NotificationPort);
 
   readonly properties = signal<PropertyResponse[]>([]);
   readonly loading = signal<boolean>(false);
 
   loadProperties(filters?: { status?: PropertyStatus; ownerId?: string; search?: string }): void {
     this.loading.set(true);
-    this.queryBus.dispatch(new GetPropertiesQuery(filters)).subscribe({
+    this.propertyPort.getAll(filters).subscribe({
       next: list => {
         this.properties.set(list);
         this.loading.set(false);
@@ -34,8 +28,9 @@ export class PropertiesStore {
 
   createProperty(payload: CreatePropertyRequest, onSuccess?: (created: PropertyResponse) => void): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new CreatePropertyCommand(payload)).subscribe({
+    this.propertyPort.create(payload).subscribe({
       next: created => {
+        this.notification.success(`Imóvel ${created.code} cadastrado com sucesso!`);
         this.loading.set(false);
         this.loadProperties();
         onSuccess?.(created);
@@ -50,8 +45,9 @@ export class PropertiesStore {
     onSuccess?: (updated: PropertyResponse) => void
   ): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new UpdatePropertyCommand(id, payload)).subscribe({
+    this.propertyPort.update(id, payload).subscribe({
       next: updated => {
+        this.notification.success(`Imóvel ${updated.code} atualizado com sucesso!`);
         this.loading.set(false);
         this.loadProperties();
         onSuccess?.(updated);
@@ -66,11 +62,13 @@ export class PropertiesStore {
         ? PropertyStatus.Available
         : PropertyStatus.Maintenance;
 
-    this.commandBus
-      .dispatch(new UpdatePropertyStatusCommand(property.id, { status: nextStatus }))
+    this.propertyPort
+      .updateStatus(property.id, { status: nextStatus })
       .subscribe({
-        next: () => this.loadProperties()
+        next: () => {
+          this.notification.success('Status de disponibilidade do imóvel atualizado!');
+          this.loadProperties();
+        }
       });
   }
 }
-

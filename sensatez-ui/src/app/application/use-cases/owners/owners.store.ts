@@ -5,19 +5,17 @@ import {
   OwnerResponse,
   UpdateOwnerRequest
 } from '../../../domain/models/owner.model';
-import { CommandBus, QueryBus } from '../../cqrs/cqrs-bus';
 import {
-  CreateOwnerCommand,
-  DeactivateOwnerCommand,
-  GetOwnerStatementQuery,
-  GetOwnersQuery,
-  UpdateOwnerCommand
-} from './owners.cqrs';
+  DashboardPort,
+  NotificationPort,
+  OwnerPort
+} from '../../../domain/ports/ports.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class OwnersStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
+  private readonly ownerPort = inject(OwnerPort);
+  private readonly dashboardPort = inject(DashboardPort);
+  private readonly notification = inject(NotificationPort);
 
   readonly owners = signal<OwnerResponse[]>([]);
   readonly loading = signal<boolean>(false);
@@ -26,7 +24,7 @@ export class OwnersStore {
 
   loadOwners(filters?: { search?: string; onlyActive?: boolean }): void {
     this.loading.set(true);
-    this.queryBus.dispatch(new GetOwnersQuery(filters)).subscribe({
+    this.ownerPort.getAll(filters).subscribe({
       next: list => {
         this.owners.set(list);
         this.loading.set(false);
@@ -37,7 +35,7 @@ export class OwnersStore {
 
   loadStatement(ownerId: string, year: number, month: number): void {
     this.statementLoading.set(true);
-    this.queryBus.dispatch(new GetOwnerStatementQuery(ownerId, year, month)).subscribe({
+    this.dashboardPort.getOwnerStatement(ownerId, year, month).subscribe({
       next: statement => {
         this.currentStatement.set(statement);
         this.statementLoading.set(false);
@@ -48,8 +46,9 @@ export class OwnersStore {
 
   createOwner(payload: CreateOwnerRequest, onSuccess?: () => void): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new CreateOwnerCommand(payload)).subscribe({
-      next: () => {
+    this.ownerPort.create(payload).subscribe({
+      next: owner => {
+        this.notification.success(`Proprietário ${owner.fullName} cadastrado com sucesso!`);
         this.loading.set(false);
         this.loadOwners();
         onSuccess?.();
@@ -60,8 +59,9 @@ export class OwnersStore {
 
   updateOwner(id: string, payload: UpdateOwnerRequest, onSuccess?: () => void): void {
     this.loading.set(true);
-    this.commandBus.dispatch(new UpdateOwnerCommand(id, payload)).subscribe({
-      next: () => {
+    this.ownerPort.update(id, payload).subscribe({
+      next: owner => {
+        this.notification.success(`Dados de ${owner.fullName} atualizados!`);
         this.loading.set(false);
         this.loadOwners();
         onSuccess?.();
@@ -71,12 +71,12 @@ export class OwnersStore {
   }
 
   deactivateOwner(id: string, onSuccess?: () => void): void {
-    this.commandBus.dispatch(new DeactivateOwnerCommand(id)).subscribe({
+    this.ownerPort.deactivate(id).subscribe({
       next: () => {
+        this.notification.info('Proprietário inativado com sucesso.');
         this.loadOwners();
         onSuccess?.();
       }
     });
   }
 }
-

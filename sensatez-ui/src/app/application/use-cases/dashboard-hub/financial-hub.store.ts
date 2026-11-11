@@ -13,17 +13,11 @@ import {
   RentChargeDetailResponse,
   TransferToOwnerRequest
 } from '../../../domain/models/rent-charge.model';
-import { CommandBus, QueryBus } from '../../cqrs/cqrs-bus';
 import {
-  GetCalendarMonthQuery,
-  GetChargeDetailQuery,
-  GetMonthlySummaryQuery,
-  GetOperationalAlertsQuery,
-  GetOverdueChargesQuery,
-  PayChargeCommand,
-  TransferToOwnerCommand,
-  UpdateChargeNotesCommand
-} from './financial-hub.cqrs';
+  ChargePort,
+  DashboardPort,
+  NotificationPort
+} from '../../../domain/ports/ports.tokens';
 
 export type SemaphoreFilter =
   | 'ALL'
@@ -37,8 +31,9 @@ export type HubActiveTab = 'AGENDA' | 'CALENDAR_GRID' | 'OVERDUE' | 'EXECUTIVE';
 
 @Injectable({ providedIn: 'root' })
 export class FinancialHubStore {
-  private readonly queryBus = inject(QueryBus);
-  private readonly commandBus = inject(CommandBus);
+  private readonly chargePort = inject(ChargePort);
+  private readonly dashboardPort = inject(DashboardPort);
+  private readonly notification = inject(NotificationPort);
 
   private readonly now = new Date();
   readonly selectedYear = signal<number>(this.now.getFullYear());
@@ -103,10 +98,10 @@ export class FinancialHubStore {
     this.loading.set(true);
 
     forkJoin({
-      calendar: this.queryBus.dispatch(new GetCalendarMonthQuery(year, month)),
-      summary: this.queryBus.dispatch(new GetMonthlySummaryQuery(year, month)),
-      alerts: this.queryBus.dispatch(new GetOperationalAlertsQuery()),
-      overdue: this.queryBus.dispatch(new GetOverdueChargesQuery())
+      calendar: this.chargePort.getCalendarMonth(year, month),
+      summary: this.dashboardPort.getMonthlySummary(year, month),
+      alerts: this.dashboardPort.getAlerts(),
+      overdue: this.chargePort.getOverdue()
     }).subscribe({
       next: ({ calendar, summary, alerts, overdue }) => {
         this.calendarData.set(calendar);
@@ -155,7 +150,7 @@ export class FinancialHubStore {
   openChargeDrawer(chargeId: string): void {
     this.drawerOpen.set(true);
     this.drawerLoading.set(true);
-    this.queryBus.dispatch(new GetChargeDetailQuery(chargeId)).subscribe({
+    this.chargePort.getById(chargeId).subscribe({
       next: detail => {
         this.selectedChargeDetail.set(detail);
         this.drawerLoading.set(false);
@@ -173,10 +168,14 @@ export class FinancialHubStore {
 
   payCharge(chargeId: string, payload: PayChargeRequest): void {
     this.drawerLoading.set(true);
-    this.commandBus.dispatch(new PayChargeCommand(chargeId, payload)).subscribe({
+    this.chargePort.pay(chargeId, payload).subscribe({
       next: updated => {
         this.selectedChargeDetail.set(updated);
         this.drawerLoading.set(false);
+        this.notification.success(
+          'Pagamento registrado com sucesso! O semáforo mudou para Verde.',
+          'Baixa realizada'
+        );
         this.loadAllHubData();
       },
       error: () => {
@@ -187,10 +186,14 @@ export class FinancialHubStore {
 
   transferToOwner(chargeId: string, payload: TransferToOwnerRequest): void {
     this.drawerLoading.set(true);
-    this.commandBus.dispatch(new TransferToOwnerCommand(chargeId, payload)).subscribe({
+    this.chargePort.transferToOwner(chargeId, payload).subscribe({
       next: updated => {
         this.selectedChargeDetail.set(updated);
         this.drawerLoading.set(false);
+        this.notification.success(
+          'Repasse líquido ao proprietário confirmado com sucesso!',
+          'Repasse Pix registrado'
+        );
         this.loadAllHubData();
       },
       error: () => {
@@ -201,10 +204,11 @@ export class FinancialHubStore {
 
   updateNotes(chargeId: string, notes: string): void {
     this.drawerLoading.set(true);
-    this.commandBus.dispatch(new UpdateChargeNotesCommand(chargeId, notes)).subscribe({
+    this.chargePort.updateNotes(chargeId, { notes }).subscribe({
       next: updated => {
         this.selectedChargeDetail.set(updated);
         this.drawerLoading.set(false);
+        this.notification.success('Anotação de cobrança salva no histórico da parcela.');
         this.loadAllHubData();
       },
       error: () => {
@@ -213,4 +217,3 @@ export class FinancialHubStore {
     });
   }
 }
-

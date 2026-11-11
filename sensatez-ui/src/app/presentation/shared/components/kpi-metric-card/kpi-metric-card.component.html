@@ -1,13 +1,13 @@
 <div
-  class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-4 shadow-sm hover:border-[#D4A872]/40 transition-all"
+  class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-3 sm:p-4 shadow-sm hover:border-[#D4A872]/40 transition-all h-full flex flex-col justify-between"
 >
-  <div class="flex items-center justify-between gap-2 mb-3">
-    <span class="text-xs font-medium text-slate-500 dark:text-zinc-400 truncate">
+  <div class="flex items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+    <span class="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-zinc-400 truncate">
       {{ title() }}
     </span>
     @if (badgeText()) {
       <span
-        class="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0"
+        class="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold shrink-0"
         [ngClass]="{
           'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30':
             badgeVariant() === 'success',
@@ -24,20 +24,20 @@
     }
   </div>
 
-  <div class="flex items-end justify-between gap-3">
-    <div>
-      <div class="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
+  <div class="flex items-end justify-between gap-2 sm:gap-3">
+    <div class="min-w-0">
+      <div class="text-base sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 truncate">
         {{ mainValue() }}
       </div>
       @if (subValue()) {
-        <p class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
+        <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 sm:mt-1 truncate">
           {{ subValue() }}
         </p>
       }
     </div>
 
     @if (chartType() === 'bars') {
-      <div class="flex items-end gap-1 h-9 shrink-0" aria-hidden="true">
+      <div class="hidden sm:flex items-end gap-1 h-9 shrink-0" aria-hidden="true">
         <span class="w-1.5 h-4 rounded-full bg-purple-500/40"></span>
         <span class="w-1.5 h-6 rounded-full bg-purple-500/60"></span>
         <span class="w-1.5 h-5 rounded-full bg-purple-500/50"></span>
@@ -46,7 +46,7 @@
         <span class="w-1.5 h-9 rounded-full bg-[#D4A872]"></span>
       </div>
     } @else if (chartType() === 'sparkline') {
-      <svg class="w-16 h-9 shrink-0 text-purple-400" viewBox="0 0 64 36" fill="none">
+      <svg class="hidden sm:block w-16 h-9 shrink-0 text-purple-400" viewBox="0 0 64 36" fill="none">
         <path
           d="M2 28 C14 24, 20 30, 32 18 C42 8, 50 14, 62 4"
           stroke="currentColor"
@@ -55,7 +55,7 @@
         />
       </svg>
     } @else if (chartType() === 'dots') {
-      <div class="flex items-center -space-x-1.5 shrink-0">
+      <div class="hidden sm:flex items-center -space-x-1.5 shrink-0">
         <span class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold flex items-center justify-center">L</span>
         <span class="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400 text-[10px] font-bold flex items-center justify-center">D</span>
         <span class="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] font-bold flex items-center justify-center">M</span>
@@ -63,4 +63,3 @@
     }
   </div>
 </div>
-

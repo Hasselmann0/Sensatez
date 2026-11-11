@@ -1,8 +1,8 @@
-<div class="space-y-6">
-  <!-- 1. HEADER + SELETOR DE COMPETÊNCIA (Estilo Topo do Anexo 2) -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="space-y-4 sm:space-y-6">
+  <!-- 1. HEADER + SELETOR DE COMPETÊNCIA -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
         Central Financeira & Operacional
       </h1>
       <p class="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
@@ -10,18 +10,18 @@
       </p>
     </div>
 
-    <!-- Seletor de Competência (< Mês / Ano > + Hoje) -->
-    <div class="flex items-center gap-2 self-start sm:self-auto">
+    <!-- Seletor de Competência (< Mês / Ano > + Hoje) Adaptado p/ Celular e Desktop -->
+    <div class="flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 w-full sm:w-auto bg-white dark:bg-[#151519] sm:bg-transparent dark:sm:bg-transparent p-1.5 sm:p-0 rounded-2xl border border-slate-200 dark:border-[#262632] sm:border-0">
       <button
         type="button"
         (click)="hubStore.previousMonth()"
-        class="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] text-xs font-semibold hover:border-[#D4A872] transition-colors"
+        class="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#262632] bg-slate-50 sm:bg-white dark:bg-[#1C1C22] dark:sm:bg-[#151519] text-xs font-semibold hover:border-[#D4A872] transition-colors"
       >
-        ‹ Anterior
+        ‹ <span class="hidden sm:inline">Anterior</span>
       </button>
 
       <div
-        class="px-4 py-2 rounded-xl border border-[#D4A872]/40 bg-[#D4A872]/10 text-xs font-bold text-slate-900 dark:text-[#D4A872] min-w-[145px] text-center"
+        class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-xl border border-[#D4A872]/40 bg-[#D4A872]/10 text-xs font-bold text-slate-900 dark:text-[#D4A872] sm:min-w-[145px] text-center truncate"
       >
         {{ monthName() }} {{ hubStore.selectedYear() }}
       </div>
@@ -29,30 +29,32 @@
       <button
         type="button"
         (click)="hubStore.nextMonth()"
-        class="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] text-xs font-semibold hover:border-[#D4A872] transition-colors"
+        class="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#262632] bg-slate-50 sm:bg-white dark:bg-[#1C1C22] dark:sm:bg-[#151519] text-xs font-semibold hover:border-[#D4A872] transition-colors"
       >
-        Próximo ›
+        <span class="hidden sm:inline">Próximo</span> ›
       </button>
 
       <button
         type="button"
         (click)="hubStore.goToCurrentMonth()"
-        class="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-200 text-xs font-medium hover:brightness-110"
+        class="px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-200 text-xs font-medium hover:brightness-110 shrink-0"
       >
         Hoje
       </button>
     </div>
   </div>
 
-  <!-- 2. ABAS SUPERIORES EM PILLS (Anexo 2: Overview | Team | Projects | Insights -> Telas 2, 3 e 4) -->
-  <div class="flex items-center justify-between gap-4 flex-wrap">
-    <app-pill-tabs
-      [tabs]="hubTabs()"
-      [activeTab]="hubStore.activeTab()"
-      (tabChange)="onHubTabChange($event)"
-    />
+  <!-- 2. ABAS SUPERIORES EM PILLS + BOTÃO NOVO CONTRATO -->
+  <div class="flex items-center justify-between gap-2 sm:gap-4 flex-wrap">
+    <div class="w-full sm:w-auto overflow-hidden">
+      <app-pill-tabs
+        [tabs]="hubTabs()"
+        [activeTab]="hubStore.activeTab()"
+        (tabChange)="onHubTabChange($event)"
+      />
+    </div>
 
-    <div class="flex items-center gap-2">
+    <div class="hidden sm:flex items-center gap-2">
       <button
         type="button"
         (click)="router.navigate(['/contratos'])"
@@ -63,84 +65,88 @@
     </div>
   </div>
 
-  <!-- 3. FAIXA DE 5 KPI CARDS NO TOPO (Estilo Anexo 2) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+  <!-- 3. FAIXA DE 5 KPI CARDS NO TOPO (Grade 2x2 Compacta no Celular | 5 Colunas no Desktop) -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
     <app-kpi-metric-card
-      title="Receita Recebida no Mês"
+      title="Receita Recebida"
       [mainValue]="((hubStore.calendarData()?.totalPaid ?? 0) | currency: 'BRL') || 'R$ 0,00'"
-      [subValue]="'Previsto: ' + ((hubStore.calendarData()?.totalExpected ?? 0) | currency: 'BRL')"
-      [badgeText]="receivedPercentage() + '% recebido'"
+      [subValue]="'Prev: ' + ((hubStore.calendarData()?.totalExpected ?? 0) | currency: 'BRL')"
+      [badgeText]="receivedPercentage() + '%'"
       badgeVariant="success"
       chartType="bars"
     />
 
     <app-kpi-metric-card
-      title="Comissão da Imobiliária"
+      title="Comissão Imob."
       [mainValue]="((hubStore.summaryData()?.realizedCommission ?? 0) | currency: 'BRL') || 'R$ 0,00'"
-      [subValue]="'Prevista: ' + ((hubStore.calendarData()?.totalCommissionExpected ?? 0) | currency: 'BRL')"
+      [subValue]="'Prev: ' + ((hubStore.calendarData()?.totalCommissionExpected ?? 0) | currency: 'BRL')"
       badgeText="Taxa Adm"
       badgeVariant="neutral"
       chartType="sparkline"
     />
 
     <app-kpi-metric-card
-      title="Líquido Proprietários"
+      title="Líquido Prop."
       [mainValue]="((hubStore.summaryData()?.netOwnerPendingTransfer ?? 0) | currency: 'BRL') || 'R$ 0,00'"
-      [subValue]="'Já repassado: ' + ((hubStore.summaryData()?.netOwnerTransferred ?? 0) | currency: 'BRL')"
-      [badgeText]="(hubStore.alertsData()?.pendingOwnerTransfers?.length ?? 0) + ' pendentes'"
+      [subValue]="'Repassado: ' + ((hubStore.summaryData()?.netOwnerTransferred ?? 0) | currency: 'BRL')"
+      [badgeText]="(hubStore.alertsData()?.pendingOwnerTransfers?.length ?? 0) + ' pend.'"
       badgeVariant="warning"
       chartType="dots"
     />
 
     <app-kpi-metric-card
-      title="Em Atraso no Mês"
+      title="Em Atraso"
       [mainValue]="((hubStore.calendarData()?.totalOverdue ?? 0) | currency: 'BRL') || 'R$ 0,00'"
       [subValue]="'Geral: ' + ((hubStore.overdueData()?.totalUpdatedOverdueAmount ?? 0) | currency: 'BRL')"
-      [badgeText]="(hubStore.overdueData()?.overdueChargesCount ?? 0) + ' vencidos'"
+      [badgeText]="(hubStore.overdueData()?.overdueChargesCount ?? 0) + ' venc.'"
       badgeVariant="danger"
     />
 
-    <app-kpi-metric-card
-      title="Ocupação da Carteira"
-      [mainValue]="
-        (hubStore.summaryData()?.rentedProperties ?? 0) +
-        '/' +
-        (hubStore.summaryData()?.totalProperties ?? 0) +
-        ' Locados'
-      "
-      [subValue]="
-        '🟢 ' +
-        (hubStore.summaryData()?.availableProperties ?? 0) +
-        ' Disp. • 🟠 ' +
-        (hubStore.summaryData()?.maintenanceProperties ?? 0) +
-        ' Manut.'
-      "
-      [badgeText]="occupancyRate() + '%'"
-      badgeVariant="success"
-    />
+    <div class="col-span-2 lg:col-span-1">
+      <app-kpi-metric-card
+        title="Ocupação da Carteira"
+        [mainValue]="
+          (hubStore.summaryData()?.rentedProperties ?? 0) +
+          '/' +
+          (hubStore.summaryData()?.totalProperties ?? 0) +
+          ' Locados'
+        "
+        [subValue]="
+          '🟢 ' +
+          (hubStore.summaryData()?.availableProperties ?? 0) +
+          ' Disp. • 🟠 ' +
+          (hubStore.summaryData()?.maintenanceProperties ?? 0) +
+          ' Manut.'
+        "
+        [badgeText]="occupancyRate() + '%'"
+        badgeVariant="success"
+      />
+    </div>
   </div>
 
-  <!-- ==================== ABA 1: AGENDA DO MÊS + ALERTAS LATERAIS (ANEXO 2) ==================== -->
+  <!-- ==================== ABA 1: AGENDA DO MÊS + ALERTAS LATERAIS ==================== -->
   @if (hubStore.activeTab() === 'AGENDA') {
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <!-- Coluna Principal Esquerda (8 colunas - Estilo "My day" do Anexo 2) -->
-      <div class="lg:col-span-8 space-y-4">
-        <div class="flex items-center justify-between gap-2 flex-wrap">
-          <h2 class="text-base font-bold text-slate-900 dark:text-zinc-100">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+      <!-- Coluna Principal Esquerda (8 colunas) -->
+      <div class="lg:col-span-8 space-y-3.5 sm:space-y-4 min-w-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-zinc-100">
             Aluguéis da Competência ({{ hubStore.filteredCalendarItems().length }})
           </h2>
 
-          <!-- Filtros Rápidos do Semáforo -->
-          <app-pill-tabs
-            [tabs]="semaphoreTabs()"
-            [activeTab]="hubStore.semaphoreFilter()"
-            (tabChange)="onSemaphoreFilterChange($event)"
-          />
+          <!-- Filtros Rápidos do Semáforo (Scroll Horizontal no Mobile) -->
+          <div class="w-full sm:w-auto overflow-hidden">
+            <app-pill-tabs
+              [tabs]="semaphoreTabs()"
+              [activeTab]="hubStore.semaphoreFilter()"
+              (tabChange)="onSemaphoreFilterChange($event)"
+            />
+          </div>
         </div>
 
         @if (hubStore.filteredCalendarItems().length === 0) {
           <div
-            class="p-12 rounded-2xl border border-dashed border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] text-center space-y-2"
+            class="p-8 sm:p-12 rounded-2xl border border-dashed border-slate-200 dark:border-[#262632] bg-white dark:bg-[#151519] text-center space-y-2"
           >
             <div class="text-2xl">📅</div>
             <h3 class="text-sm font-semibold">Nenhuma cobrança encontrada para este filtro</h3>
@@ -149,7 +155,7 @@
             </p>
           </div>
         } @else {
-          <div class="space-y-3">
+          <div class="space-y-2.5 sm:space-y-3">
             @for (item of hubStore.filteredCalendarItems(); track item.chargeId) {
               <app-charge-agenda-card
                 [charge]="item"
@@ -160,11 +166,11 @@
         }
       </div>
 
-      <!-- Coluna Direita (4 colunas - Estilo "Team capacity / Recent mentions" do Anexo 2) -->
-      <div class="lg:col-span-4 space-y-6">
+      <!-- Coluna Direita (4 colunas) -->
+      <div class="lg:col-span-4 space-y-4 sm:space-y-6">
         <!-- Bloco Superior Direito: Repasses Pix Pendentes & Vencendo em 5 Dias -->
         <div
-          class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-5 space-y-4"
+          class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-4 sm:p-5 space-y-4"
         >
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100">
@@ -202,7 +208,7 @@
                   </div>
                   <button
                     type="button"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#D4A872] text-zinc-950 shrink-0"
+                    class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#D4A872] text-zinc-950 shrink-0"
                   >
                     Repassar
                   </button>
@@ -235,7 +241,7 @@
 
         <!-- Bloco Inferior Direito: Alertas de Contratos (Reajuste Anual & Fim de Vigência) -->
         <div
-          class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-5 space-y-4"
+          class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-4 sm:p-5 space-y-4"
         >
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100">
@@ -280,7 +286,7 @@
               <button
                 type="button"
                 (click)="router.navigate(['/contratos'], { queryParams: { readjustContractId: eligible.contractId } })"
-                class="w-full py-1.5 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-500"
+                class="w-full py-2 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-500"
               >
                 Aplicar Reajuste Anual
               </button>
@@ -307,85 +313,259 @@
     </div>
   }
 
-  <!-- ==================== ABA 2: GRADE DE CALENDÁRIO MENSAL (TELA 2 GRADE) ==================== -->
+  <!-- ==================== ABA 2: GRADE DE CALENDÁRIO MENSAL ==================== -->
   @if (hubStore.activeTab() === 'CALENDAR_GRID') {
     <div
-      class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-5 space-y-4"
+      class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-3.5 sm:p-5 space-y-4"
     >
       <div class="flex items-center justify-between flex-wrap gap-2">
-        <h2 class="text-base font-bold">
+        <h2 class="text-sm sm:text-base font-bold">
           Grade de Vencimentos — {{ monthName() }} {{ hubStore.selectedYear() }}
         </h2>
-        <div class="flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-2.5 sm:gap-3 text-[11px] sm:text-xs flex-wrap">
           <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Pago</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Vence em até 5d</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Vence 5d</span>
           <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Atrasado</span>
           <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-zinc-500"></span> A Vencer</span>
         </div>
       </div>
 
-      <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 pb-1">
-        <div>Dom</div>
-        <div>Seg</div>
-        <div>Ter</div>
-        <div>Qua</div>
-        <div>Qui</div>
-        <div>Sex</div>
-        <div>Sáb</div>
-      </div>
+      <!-- VISÃO MOBILE (< md): MINI-CALENDÁRIO INTERATIVO COM BOLINHAS DO SEMÁFORO -->
+      <div class="md:hidden space-y-4">
+        <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-400">
+          <div>D</div>
+          <div>S</div>
+          <div>T</div>
+          <div>Q</div>
+          <div>Q</div>
+          <div>S</div>
+          <div>S</div>
+        </div>
 
-      <div class="grid grid-cols-7 gap-2">
-        @for (cell of calendarGridCells(); track cell.dayKey) {
-          <div
-            class="min-h-[110px] rounded-xl p-2 border transition-colors flex flex-col justify-between"
-            [ngClass]="
-              cell.dayNumber
-                ? 'border-slate-200 dark:border-[#24242E] bg-slate-50/50 dark:bg-[#191920]'
-                : 'border-transparent bg-transparent'
-            "
-          >
+        <div class="grid grid-cols-7 gap-1.5">
+          @for (cell of calendarGridCells(); track cell.dayKey) {
             @if (cell.dayNumber) {
-              <div class="text-xs font-bold text-slate-400 dark:text-zinc-500">
-                {{ cell.dayNumber }}
+              <button
+                type="button"
+                (click)="selectCalendarDay(cell.dayNumber)"
+                class="h-12 rounded-xl border flex flex-col items-center justify-center transition-all"
+                [ngClass]="
+                  activeCalendarDay() === cell.dayNumber
+                    ? 'border-[#D4A872] bg-[#D4A872]/15 text-slate-900 dark:text-white font-bold shadow-sm'
+                    : cell.charges.length > 0
+                      ? 'border-slate-300 dark:border-zinc-700 bg-slate-50 dark:bg-[#1E1E26] text-slate-800 dark:text-zinc-100 font-semibold'
+                      : 'border-slate-100 dark:border-[#22222A] bg-slate-50/40 dark:bg-[#18181F] text-slate-400 dark:text-zinc-500'
+                "
+              >
+                <span class="text-xs">{{ cell.dayNumber }}</span>
+                @if (cell.charges.length > 0) {
+                  <div class="flex items-center gap-1 mt-1">
+                    @for (ch of cell.charges.slice(0, 3); track ch.chargeId) {
+                      <span
+                        class="w-2 h-2 rounded-full"
+                        [ngClass]="{
+                          'bg-emerald-500': ch.visualStatus === VisualStatus.Paid,
+                          'bg-amber-500': ch.visualStatus === VisualStatus.DueSoon,
+                          'bg-rose-500': ch.visualStatus === VisualStatus.Overdue,
+                          'bg-zinc-400': ch.visualStatus === VisualStatus.Upcoming
+                        }"
+                      ></span>
+                    }
+                  </div>
+                }
+              </button>
+            } @else {
+              <div class="h-12"></div>
+            }
+          }
+        </div>
+
+        <!-- Lista de Cobranças do Dia Selecionado no Mobile -->
+        <div class="pt-3 border-t border-slate-200 dark:border-[#262630] space-y-2.5">
+          @if (activeCalendarDay(); as day) {
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold uppercase tracking-wider text-[#5C3A21] dark:text-[#D4A872]">
+                Vencimentos do Dia {{ day | number: '2.0-0' }}/{{ hubStore.selectedMonth() | number: '2.0-0' }}
+              </span>
+              <span class="text-slate-400">{{ selectedDayCharges().length }} aluguel(is)</span>
+            </div>
+
+            @if (selectedDayCharges().length === 0) {
+              <div class="p-6 rounded-xl bg-slate-50 dark:bg-[#191920] text-center text-xs text-slate-400">
+                Nenhum vencimento agendado para o dia {{ day }}. Toque nos dias marcados com bolinhas acima.
               </div>
-              <div class="space-y-1.5 mt-1">
-                @for (ch of cell.charges; track ch.chargeId) {
-                  <button
-                    type="button"
-                    (click)="hubStore.openChargeDrawer(ch.chargeId)"
-                    class="w-full text-left p-1.5 rounded-lg text-[10px] font-medium border truncate transition-transform hover:scale-[1.02]"
-                    [ngClass]="{
-                      'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300':
-                        ch.visualStatus === VisualStatus.Paid,
-                      'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-300':
-                        ch.visualStatus === VisualStatus.DueSoon,
-                      'bg-rose-500/20 border-rose-500/50 text-rose-600 dark:text-rose-300':
-                        ch.visualStatus === VisualStatus.Overdue,
-                      'bg-zinc-500/15 border-zinc-500/30 text-slate-600 dark:text-zinc-300':
-                        ch.visualStatus === VisualStatus.Upcoming
-                    }"
-                  >
-                    <div class="font-bold truncate">{{ ch.tenantName }}</div>
-                    <div>{{ ch.updatedTotalAmount | currency: 'BRL' }}</div>
-                  </button>
+            } @else {
+              <div class="space-y-2.5">
+                @for (item of selectedDayCharges(); track item.chargeId) {
+                  <app-charge-agenda-card
+                    [charge]="item"
+                    (selectCharge)="hubStore.openChargeDrawer($event)"
+                  />
                 }
               </div>
             }
-          </div>
-        }
+          } @else {
+            <div class="p-6 rounded-xl bg-slate-50 dark:bg-[#191920] text-center text-xs text-slate-400">
+              Nenhuma cobrança registrada nesta competência mensal.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- VISÃO DESKTOP (>= md): GRADE MENSAL EXPANDIDA COMPLETA -->
+      <div class="hidden md:block space-y-2">
+        <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 pb-1">
+          <div>Dom</div>
+          <div>Seg</div>
+          <div>Ter</div>
+          <div>Qua</div>
+          <div>Qui</div>
+          <div>Sex</div>
+          <div>Sáb</div>
+        </div>
+
+        <div class="grid grid-cols-7 gap-2">
+          @for (cell of calendarGridCells(); track cell.dayKey) {
+            <div
+              class="min-h-[110px] rounded-xl p-2 border transition-colors flex flex-col justify-between"
+              [ngClass]="
+                cell.dayNumber
+                  ? 'border-slate-200 dark:border-[#24242E] bg-slate-50/50 dark:bg-[#191920]'
+                  : 'border-transparent bg-transparent'
+              "
+            >
+              @if (cell.dayNumber) {
+                <div class="text-xs font-bold text-slate-400 dark:text-zinc-500">
+                  {{ cell.dayNumber }}
+                </div>
+                <div class="space-y-1.5 mt-1">
+                  @for (ch of cell.charges; track ch.chargeId) {
+                    <button
+                      type="button"
+                      (click)="hubStore.openChargeDrawer(ch.chargeId)"
+                      class="w-full text-left p-1.5 rounded-lg text-[10px] font-medium border truncate transition-transform hover:scale-[1.02]"
+                      [ngClass]="{
+                        'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300':
+                          ch.visualStatus === VisualStatus.Paid,
+                        'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-300':
+                          ch.visualStatus === VisualStatus.DueSoon,
+                        'bg-rose-500/20 border-rose-500/50 text-rose-600 dark:text-rose-300':
+                          ch.visualStatus === VisualStatus.Overdue,
+                        'bg-zinc-500/15 border-zinc-500/30 text-slate-600 dark:text-zinc-300':
+                          ch.visualStatus === VisualStatus.Upcoming
+                      }"
+                    >
+                      <div class="font-bold truncate">{{ ch.tenantName }}</div>
+                      <div>{{ ch.updatedTotalAmount | currency: 'BRL' }}</div>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
   }
 
-  <!-- ==================== ABA 3: PAINEL DE INADIMPLÊNCIA & COBRANÇA (TELA 4 INTEGRADA) ==================== -->
+  <!-- ==================== ABA 3: PAINEL DE INADIMPLÊNCIA & COBRANÇA ==================== -->
   @if (hubStore.activeTab() === 'OVERDUE') {
-    <div class="space-y-5">
-      <!-- Faixa de Resumo de Inadimplência (Estilo Anexo 3) -->
+    <div class="space-y-4 sm:space-y-5">
+      <!-- Faixa de Resumo de Inadimplência -->
       <app-status-summary-strip [items]="overdueStripItems()" />
 
-      <!-- Tabela de Cobrança Ativa (Estilo Anexo 3) -->
+      <!-- VISÃO MOBILE (< md): CARDS INTERATIVOS DE COBRANÇA ATIVA -->
+      <div class="md:hidden space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-sm font-bold text-slate-900 dark:text-zinc-100">
+            🚨 Fila Prioritária de Cobrança
+          </h2>
+          <span class="text-xs font-semibold text-rose-500">
+            {{ hubStore.overdueData()?.items?.length ?? 0 }} vencidas
+          </span>
+        </div>
+
+        @for (ov of hubStore.overdueData()?.items ?? []; track ov.chargeId) {
+          <div
+            class="p-4 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] shadow-sm space-y-3"
+          >
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <span
+                  class="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold bg-rose-500/20 text-rose-500 border border-rose-500/30"
+                >
+                  🔴 {{ ov.daysOverdue }} dias em atraso
+                </span>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100 mt-1.5">
+                  {{ ov.tenantName }}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-zinc-400">
+                  {{ ov.propertyAddress }}
+                </p>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-[11px] text-slate-400 block">
+                  Comp. {{ ov.referenceMonth | number: '2.0-0' }}/{{ ov.referenceYear }}
+                </span>
+                <span class="text-base font-bold text-rose-500">
+                  {{ ov.updatedTotalAmount | currency: 'BRL' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#1B1B22] text-xs">
+              <div>
+                <span class="text-slate-400 block">Original ({{ ov.dueDate | date: 'dd/MM' }}):</span>
+                <strong class="text-slate-800 dark:text-zinc-200">{{ ov.originalAmount | currency: 'BRL' }}</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block">Multa + Juros Hoje:</span>
+                <strong class="text-rose-500">+ {{ ov.penaltyAmount + ov.interestAmount | currency: 'BRL' }}</strong>
+              </div>
+            </div>
+
+            @if (ov.notes) {
+              <div class="text-xs text-slate-500 dark:text-zinc-400 italic bg-slate-50/70 dark:bg-[#191920] p-2.5 rounded-xl">
+                💬 "{{ ov.notes }}"
+              </div>
+            }
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <app-whatsapp-button
+                [phone]="ov.tenantPhone"
+                label="Cobrar no WhatsApp"
+                [message]="
+                  'Olá ' +
+                  ov.tenantName +
+                  ', identificamos em aberto o aluguel ref. ' +
+                  ov.referenceMonth +
+                  '/' +
+                  ov.referenceYear +
+                  ' do imóvel ' +
+                  ov.propertyAddress +
+                  ' no valor atualizado de R$ ' +
+                  ov.updatedTotalAmount.toFixed(2)
+                "
+              />
+              <button
+                type="button"
+                (click)="hubStore.openChargeDrawer(ov.chargeId)"
+                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white text-center"
+              >
+                ✅ Acordo / Baixa
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="p-8 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] text-center text-xs text-slate-400">
+            🎉 Parabéns! Nenhuma parcela vencida em atraso na carteira.
+          </div>
+        }
+      </div>
+
+      <!-- VISÃO DESKTOP (>= md): TABELA DE COBRANÇA ATIVA -->
       <div
-        class="rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
+        class="hidden md:block rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] overflow-hidden shadow-sm"
       >
         <div class="px-6 py-4 border-b border-slate-200 dark:border-[#262630] flex items-center justify-between">
           <div>
@@ -497,19 +677,19 @@
     </div>
   }
 
-  <!-- ==================== ABA 4: VISÃO EXECUTIVA & OCUPAÇÃO (TELA 3 DETALHADA) ==================== -->
+  <!-- ==================== ABA 4: VISÃO EXECUTIVA & OCUPAÇÃO ==================== -->
   @if (hubStore.activeTab() === 'EXECUTIVE') {
     @if (hubStore.summaryData(); as s) {
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         <!-- Barras de Progresso de Caixa e Comissões -->
         <div
-          class="lg:col-span-7 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-6 space-y-5"
+          class="lg:col-span-7 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-4 sm:p-6 space-y-5"
         >
-          <h2 class="text-base font-bold">📊 Desempenho de Caixa & Comissões no Mês</h2>
+          <h2 class="text-sm sm:text-base font-bold">📊 Desempenho de Caixa & Comissões no Mês</h2>
 
           <!-- Progresso Receita Bruta -->
           <div class="space-y-2">
-            <div class="flex justify-between text-xs">
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs">
               <span class="font-medium text-slate-500 dark:text-zinc-400">
                 Receita Bruta de Aluguéis (Recebido vs Previsto)
               </span>
@@ -531,7 +711,7 @@
 
           <!-- Progresso Comissões -->
           <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-            <div class="flex justify-between text-xs">
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs">
               <span class="font-medium text-slate-500 dark:text-zinc-400">
                 Resultado da Imobiliária (Comissão Realizada vs Prevista)
               </span>
@@ -553,16 +733,16 @@
           </div>
 
           <!-- Repasses aos Proprietários -->
-          <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-zinc-800">
-            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 border-t border-slate-100 dark:border-zinc-800">
+            <div class="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
               <span class="text-xs text-amber-500 block">Aguardando Repasse Pix</span>
-              <span class="text-xl font-bold text-amber-500 mt-1 block">
+              <span class="text-lg sm:text-xl font-bold text-amber-500 mt-1 block">
                 {{ s.netOwnerPendingTransfer | currency: 'BRL' }}
               </span>
             </div>
-            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <div class="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <span class="text-xs text-emerald-500 block">Já Repassado no Mês</span>
-              <span class="text-xl font-bold text-emerald-500 mt-1 block">
+              <span class="text-lg sm:text-xl font-bold text-emerald-500 mt-1 block">
                 {{ s.netOwnerTransferred | currency: 'BRL' }}
               </span>
             </div>
@@ -571,10 +751,10 @@
 
         <!-- Ocupação da Carteira de Imóveis -->
         <div
-          class="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-6 space-y-5"
+          class="lg:col-span-5 rounded-2xl border border-slate-200 dark:border-[#262630] bg-white dark:bg-[#151519] p-4 sm:p-6 space-y-5"
         >
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-bold">🏠 Ocupação da Carteira</h2>
+            <h2 class="text-sm sm:text-base font-bold">🏠 Ocupação da Carteira</h2>
             <button
               type="button"
               (click)="router.navigate(['/imoveis'])"
@@ -584,18 +764,18 @@
             </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-3 text-center">
-            <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <div class="text-2xl font-bold text-blue-400">{{ s.rentedProperties }}</div>
-              <div class="text-xs text-slate-400 mt-1">🔵 Locados</div>
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3 text-center">
+            <div class="p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <div class="text-xl sm:text-2xl font-bold text-blue-400">{{ s.rentedProperties }}</div>
+              <div class="text-[11px] sm:text-xs text-slate-400 mt-1">🔵 Locados</div>
             </div>
-            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <div class="text-2xl font-bold text-emerald-400">{{ s.availableProperties }}</div>
-              <div class="text-xs text-slate-400 mt-1">🟢 Disponíveis</div>
+            <div class="p-3 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div class="text-xl sm:text-2xl font-bold text-emerald-400">{{ s.availableProperties }}</div>
+              <div class="text-[11px] sm:text-xs text-slate-400 mt-1">🟢 Disponíveis</div>
             </div>
-            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <div class="text-2xl font-bold text-amber-400">{{ s.maintenanceProperties }}</div>
-              <div class="text-xs text-slate-400 mt-1">🟠 Manutenção</div>
+            <div class="p-3 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <div class="text-xl sm:text-2xl font-bold text-amber-400">{{ s.maintenanceProperties }}</div>
+              <div class="text-[11px] sm:text-xs text-slate-400 mt-1">🟠 Manut.</div>
             </div>
           </div>
 
@@ -609,6 +789,5 @@
   }
 </div>
 
-<!-- DRAWER LATERAL DE RAIO-X DA COBRANÇA, BAIXA E REPASSE PIX -->
+<!-- DRAWER / BOTTOM SHEET DE RAIO-X DA COBRANÇA, BAIXA E REPASSE PIX -->
 <app-charge-xray-drawer />
-
