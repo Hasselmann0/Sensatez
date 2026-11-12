@@ -10,8 +10,22 @@ namespace Sensatez.Infra.Security;
 
 public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 {
-    private string SecretKey => configuration["Jwt:SecretKey"]
-        ?? "Sensatez-MVP-SuperSecretKey-2026-Minimum32Bytes!";
+    private string SecretKey
+    {
+        get
+        {
+            var key = configuration["Jwt:SecretKey"]
+                ?? "Sensatez-MVP-SuperSecretKey-2026-Minimum32Bytes!";
+
+            if (string.IsNullOrWhiteSpace(key) || Encoding.UTF8.GetByteCount(key) < 32)
+            {
+                throw new InvalidOperationException(
+                    "A configuração 'Jwt:SecretKey' deve conter no mínimo 32 bytes (256 bits).");
+            }
+
+            return key;
+        }
+    }
 
     private string Issuer => configuration["Jwt:Issuer"] ?? "Sensatez.Api";
     private string Audience => configuration["Jwt:Audience"] ?? "Sensatez.Client";
@@ -64,12 +78,32 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 
         try
         {
+            // 1. Valida se o cabeçalho especifica o algoritmo correto (HS256)
+            var headerBytes = Base64UrlDecode(parts[0]);
+            using var headerDoc = JsonDocument.Parse(headerBytes);
+            if (!headerDoc.RootElement.TryGetProperty("alg", out var algElement) ||
+                algElement.GetString() != "HS256")
+            {
+                return null;
+            }
+
+            // 2. Valida payload: expiração, emissor (iss) e audiência (aud)
             var payloadBytes = Base64UrlDecode(parts[1]);
             using var doc = JsonDocument.Parse(payloadBytes);
             var root = doc.RootElement;
 
             if (!root.TryGetProperty("exp", out var expElement) ||
                 expElement.GetInt64() < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            {
+                return null;
+            }
+
+            if (!root.TryGetProperty("iss", out var issElement) || issElement.GetString() != Issuer)
+            {
+                return null;
+            }
+
+            if (!root.TryGetProperty("aud", out var audElement) || audElement.GetString() != Audience)
             {
                 return null;
             }

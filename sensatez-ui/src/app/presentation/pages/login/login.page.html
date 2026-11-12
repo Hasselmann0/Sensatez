@@ -137,7 +137,7 @@
               <input
                 type="email"
                 formControlName="email"
-                placeholder="admin@sensatez.com.br"
+                placeholder="seu-email@imobiliaria.com.br"
                 class="w-full pl-10 pr-4 py-3 rounded-xl text-sm bg-slate-50 dark:bg-[#18181E] border border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-[#D4A872] transition-colors"
               />
             </div>
@@ -169,16 +169,6 @@
                 {{ showPassword() ? '🙈' : '👁️' }}
               </button>
             </div>
-
-            <div class="flex justify-end mt-2">
-              <button
-                type="button"
-                (click)="fillAdminCredentials()"
-                class="text-xs font-medium text-[#B8864B] dark:text-[#D4A872] hover:underline"
-              >
-                Preencher credenciais Admin (Seed)
-              </button>
-            </div>
           </div>
 
           <!-- Gold Gradient Submit Button (Anexo 1) -->
@@ -192,26 +182,6 @@
             <span class="text-base">→</span>
           </button>
         </form>
-
-        <!-- Divider (Adaptado do Anexo 1 para Atalhos Corporativos) -->
-        <div class="relative my-7 flex items-center justify-center">
-          <div class="border-t border-slate-200 dark:border-zinc-800 w-full"></div>
-          <span
-            class="bg-white dark:bg-[#111115] px-3 text-[11px] text-slate-400 dark:text-zinc-500 whitespace-nowrap"
-          >
-            ambiente corporativo seguro
-          </span>
-          <div class="border-t border-slate-200 dark:border-zinc-800 w-full"></div>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#18181E]/70 border border-slate-200/80 dark:border-zinc-800/80 text-center">
-          <p class="text-[11px] text-slate-500 dark:text-zinc-400">
-            Credenciais padrão do banco (<code class="text-[#D4A872]">Seed</code>):
-          </p>
-          <p class="text-xs font-mono text-slate-700 dark:text-zinc-300 mt-1">
-            admin&#64;sensatez.com.br • Admin&#64;2026!
-          </p>
-        </div>
       </div>
 
       <div class="text-center text-xs text-slate-400 dark:text-zinc-500">

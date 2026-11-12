@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sensatez.Application.DTOs.Requests;
 using Sensatez.Application.DTOs.Responses;
@@ -5,6 +6,7 @@ using Sensatez.Application.Services;
 
 namespace Sensatez.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/tenants")]
 public class TenantsController(ITenantService tenantService) : ControllerBase

@@ -11,30 +11,35 @@ public static class DatabaseSeeder
     public static async Task SeedAsync(
         SensatezDbContext dbContext,
         IPasswordHasher passwordHasher,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool isDevelopment = true)
     {
         await dbContext.Database.MigrateAsync();
 
-        // 1. Seed do Usuário Administrador
+        // 1. Seed do Usuário Administrador (se ainda não existir nenhum usuário)
         if (!await dbContext.Users.AnyAsync())
         {
             var adminName = configuration["AdminSeed:FullName"] ?? "Administrador Sensatez";
             var adminEmail = configuration["AdminSeed:Email"] ?? "admin@sensatez.com.br";
             var adminPassword = configuration["AdminSeed:Password"] ?? "Admin@2026!";
 
-            dbContext.Users.Add(new User
+            if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
             {
-                FullName = adminName,
-                Email = adminEmail,
-                PasswordHash = passwordHasher.Hash(adminPassword),
-                IsActive = true
-            });
+                dbContext.Users.Add(new User
+                {
+                    FullName = adminName.Trim(),
+                    Email = adminEmail.Trim().ToLowerInvariant(),
+                    PasswordHash = passwordHasher.Hash(adminPassword),
+                    IsActive = true
+                });
 
-            await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
+            }
         }
 
-        // 2. Seed da Massa de Dados Operacional e Financeira (Idempotente)
-        if (await dbContext.Owners.AnyAsync())
+        // 2. Seed da Massa de Dados Operacional e Financeira
+        // Em produção (!isDevelopment), não criamos dados fictícios de demonstração.
+        if (!isDevelopment || await dbContext.Owners.AnyAsync())
         {
             return;
         }

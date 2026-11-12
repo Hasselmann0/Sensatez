@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sensatez.Application.DTOs.Requests;
 using Sensatez.Application.DTOs.Responses;
@@ -6,6 +7,7 @@ using Sensatez.Domain.Enums;
 
 namespace Sensatez.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/properties")]
 public class PropertiesController(IPropertyService propertyService) : ControllerBase

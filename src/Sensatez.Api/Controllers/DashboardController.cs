@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sensatez.Application.DTOs.Responses;
 using Sensatez.Application.Services;
 
 namespace Sensatez.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/dashboard")]
 public class DashboardController(IDashboardService dashboardService) : ControllerBase

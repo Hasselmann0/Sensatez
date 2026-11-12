@@ -22,16 +22,9 @@ export class LoginPageComponent {
   readonly showPassword = signal<boolean>(false);
 
   readonly loginForm = this.fb.nonNullable.group({
-    email: ['admin@sensatez.com.br', [Validators.required, Validators.email]],
-    password: ['Admin@2026!', [Validators.required]]
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]]
   });
-
-  fillAdminCredentials(): void {
-    this.loginForm.patchValue({
-      email: 'admin@sensatez.com.br',
-      password: 'Admin@2026!'
-    });
-  }
 
   onSubmit(): void {
     if (this.loginForm.invalid) {

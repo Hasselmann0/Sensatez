@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sensatez.Application.DTOs.Requests;
 using Sensatez.Application.DTOs.Responses;
@@ -7,6 +8,7 @@ namespace Sensatez.Api.Controllers;
 
 [ApiController]
 [Route("api/owners")]
+[Authorize]
 public class OwnersController(IOwnerService ownerService) : ControllerBase
 {
     [HttpPost]
