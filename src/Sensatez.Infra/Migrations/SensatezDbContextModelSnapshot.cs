@@ -90,6 +90,11 @@ namespace Sensatez.Infra.Migrations
 
                     b.HasIndex("PropertyId");
 
+                    b.HasIndex("PropertyId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LeaseContracts_PropertyId_Active")
+                        .HasFilter("\"Status\" = 'Active' AND \"IsActive\" = true");
+
                     b.HasIndex("TenantId");
 
                     b.ToTable("LeaseContracts", (string)null);

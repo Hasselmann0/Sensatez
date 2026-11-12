@@ -279,14 +279,34 @@ export class PropertiesPageComponent implements OnInit {
 
   exportCsv(): void {
     const rows = this.filteredProperties().map(p =>
-      [p.code, `"${p.fullAddress}"`, `"${p.ownerName}"`, p.suggestedRentAmount, p.status].join(';')
+      [
+        this.sanitizeCsvCell(p.code),
+        this.sanitizeCsvCell(p.fullAddress),
+        this.sanitizeCsvCell(p.ownerName),
+        this.sanitizeCsvCell(p.suggestedRentAmount),
+        this.sanitizeCsvCell(p.status)
+      ].join(';')
     );
     const csv = ['Codigo;Endereco;Proprietario;AluguelSugerido;Status', ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'carteira-imoveis-sensatez.csv';
     a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private sanitizeCsvCell(value: unknown): string {
+    if (value === null || value === undefined) {
+      return '""';
+    }
+    let str = String(value);
+    // Previne CSV Formula Injection (CWE-1236): se iniciar com =, +, -, @, \t ou \r
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = `'${str}`;
+    }
+    // Escapa aspas duplas internas e delimita o campo entre aspas duplas (RFC 4180)
+    return `"${str.replace(/"/g, '""')}"`;
   }
 }

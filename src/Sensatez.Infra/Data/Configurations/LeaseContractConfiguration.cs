@@ -60,6 +60,11 @@ public class LeaseContractConfiguration : IEntityTypeConfiguration<LeaseContract
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
+        builder.HasIndex(x => x.PropertyId)
+            .IsUnique()
+            .HasFilter("\"Status\" = 'Active' AND \"IsActive\" = true")
+            .HasDatabaseName("IX_LeaseContracts_PropertyId_Active");
+
         builder.HasOne(x => x.Property)
             .WithMany(p => p.Contracts)
             .HasForeignKey(x => x.PropertyId)

@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Sensatez.Api.Middlewares;
@@ -42,6 +43,13 @@ builder.Services.AddCors(options =>
                   .AllowAnyHeader();
         }
     });
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 builder.Services.AddRateLimiter(options =>
@@ -108,6 +116,8 @@ if (args.Contains("--seed-only", StringComparer.OrdinalIgnoreCase))
 }
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())

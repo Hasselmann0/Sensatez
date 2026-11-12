@@ -25,14 +25,28 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 _ => (StatusCodes.Status500InternalServerError, "Erro interno")
             };
 
-            if (status == StatusCodes.Status500InternalServerError)
+            if (ex is DbUpdateException)
+            {
+                logger.LogWarning(ex, "Conflito de integridade de dados no banco (DbUpdateException)");
+            }
+            else if (status == StatusCodes.Status500InternalServerError)
+            {
                 logger.LogError(ex, "Erro não tratado");
+            }
+
+            string? detail = ex switch
+            {
+                DbUpdateException => "Ocorreu um conflito ao persistir os dados. Verifique se o registro já não existe ou se há dependências vinculadas.",
+                ValidationException => "Um ou mais campos contêm erros de validação.",
+                Exception when status == StatusCodes.Status500InternalServerError => null,
+                _ => ex.Message
+            };
 
             var problem = new ProblemDetails
             {
                 Status = status,
                 Title = title,
-                Detail = status == StatusCodes.Status500InternalServerError ? null : ex.Message,
+                Detail = detail,
                 Instance = context.Request.Path
             };
 
