@@ -1,0 +1,15 @@
+**/.git
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/dist
+sensatez-ui/
+docs/
+*.md
+*.db
+*.db-shm
+*.db-wal
+appsettings.Local.json
+.env
+
