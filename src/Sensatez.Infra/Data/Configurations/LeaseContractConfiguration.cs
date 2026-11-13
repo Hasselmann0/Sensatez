@@ -62,7 +62,7 @@ public class LeaseContractConfiguration : IEntityTypeConfiguration<LeaseContract
 
         builder.HasIndex(x => x.PropertyId)
             .IsUnique()
-            .HasFilter("\"Status\" = 'Active' AND \"IsActive\" = true")
+            .HasFilter("\"Status\" = 'Active' AND \"IsActive\" = 1")
             .HasDatabaseName("IX_LeaseContracts_PropertyId_Active");
 
         builder.HasOne(x => x.Property)

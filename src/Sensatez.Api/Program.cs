@@ -1,9 +1,11 @@
+using System.Data.Common;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Scalar.AspNetCore;
 using Sensatez.Api.Middlewares;
 using Sensatez.Api.Security;
@@ -15,14 +17,27 @@ using Sensatez.Domain.Entities;
 using Sensatez.Infra.Data;
 using Sensatez.Infra.Repository;
 using Sensatez.Infra.Security;
+using TursoSqliteConnection = Turso.Data.Sqlite.SqliteConnection;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var tursoUrl = builder.Configuration["TURSO_DATABASE_URL"]
+    ?? builder.Configuration["Turso:DatabaseUrl"];
+var tursoToken = builder.Configuration["TURSO_AUTH_TOKEN"]
+    ?? builder.Configuration["Turso:AuthToken"];
 
-builder.Services.AddDbContext<SensatezDbContext>(options =>
-    options.UseNpgsql(connectionString));
+var connectionString = !string.IsNullOrWhiteSpace(tursoUrl)
+    ? $"Data Source={tursoUrl};{(string.IsNullOrWhiteSpace(tursoToken) ? string.Empty : $"Auth Token={tursoToken};")}"
+    : builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=sensatez.db";
+
+builder.Services.AddScoped<DbConnection>(_ => new TursoSqliteConnection(connectionString));
+builder.Services.AddDbContext<SensatezDbContext>((sp, options) =>
+    options.UseSqlite(
+        sp.GetRequiredService<DbConnection>(),
+        sqlite => sqlite.MigrationsAssembly("Sensatez.Infra"))
+           .ReplaceService<IRelationalDatabaseCreator, TursoSqliteDatabaseCreator>());
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 
