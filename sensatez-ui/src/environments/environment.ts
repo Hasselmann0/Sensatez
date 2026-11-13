@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5114/api'
+  apiUrl: 'https://sensatez.onrender.com/api'
 };
 
