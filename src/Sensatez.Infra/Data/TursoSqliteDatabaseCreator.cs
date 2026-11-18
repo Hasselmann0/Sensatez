@@ -21,9 +21,16 @@ public sealed class TursoSqliteDatabaseCreator : SqliteDatabaseCreator
         _connection = connection;
     }
 
-    private bool IsRemoteTurso =>
-        (_connection.ConnectionString ?? string.Empty)
-            .Contains("libsql://", StringComparison.OrdinalIgnoreCase);
+    private bool IsRemoteTurso
+    {
+        get
+        {
+            var cs = _connection.ConnectionString ?? string.Empty;
+            return cs.Contains("libsql://", StringComparison.OrdinalIgnoreCase)
+                || cs.Contains("http://", StringComparison.OrdinalIgnoreCase)
+                || cs.Contains("https://", StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     public override bool Exists() => IsRemoteTurso || base.Exists();
 
