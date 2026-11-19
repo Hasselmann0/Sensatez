@@ -12,7 +12,8 @@ public static class DatabaseSeeder
         SensatezDbContext dbContext,
         IPasswordHasher passwordHasher,
         IConfiguration configuration,
-        bool isDevelopment = true)
+
+    bool isDevelopment = false)
     {
         await dbContext.Database.MigrateAsync();
 
@@ -37,9 +38,12 @@ public static class DatabaseSeeder
             }
         }
 
-        // 2. Seed da Massa de Dados Operacional e Financeira
-        // Em produção (!isDevelopment), não criamos dados fictícios de demonstração.
-        if (!isDevelopment || await dbContext.Owners.AnyAsync())
+            // 2. Seed da Massa de Dados Operacional e Financeira (somente opt-in explícito em banco local)
+            // Nunca executa em produção, nunca executa em banco remoto (Turso/nuvem) e exige SeedDemoData=true.
+            var seedDemoData = bool.TryParse(configuration["SeedDemoData"], out var parsedSeedDemo) && parsedSeedDemo;
+        var connectionString = dbContext.Database.GetConnectionString();
+        if (!isDevelopment || !seedDemoData || IsRemoteDatabase(connectionString, configuration) ||
+            await dbContext.Owners.AnyAsync())
         {
             return;
         }
@@ -510,7 +514,8 @@ public static class DatabaseSeeder
             rentAmount: 3700.00m,
             commissionPct: 10.00m,
             index: ReadjustmentIndex.INPC,
-            notes: "Locação encerrada amigavelmente após vistoria final sem pendências. | [Rescisão]: Entrega amigável das chaves.",
+            notes:
+            "Locação encerrada amigavelmente após vistoria final sem pendências. | [Rescisão]: Entrega amigável das chaves.",
             today: today,
             currentMonthScenario: ChargeScenario.TerminatedHistorical);
         contract7Terminated.Status = ContractStatus.Terminated;
@@ -609,7 +614,8 @@ public static class DatabaseSeeder
                 if (currentMonthScenario == ChargeScenario.OverdueTwoMonths && cursor == previousMonth)
                 {
                     charge.Status = ChargeStatus.Pending;
-                    charge.Notes = "1º aviso enviado por WhatsApp. Inquilino prometeu quitar junto com a próxima parcela.";
+                    charge.Notes =
+                        "1º aviso enviado por WhatsApp. Inquilino prometeu quitar junto com a próxima parcela.";
                 }
                 else
                 {
@@ -629,47 +635,48 @@ public static class DatabaseSeeder
                 switch (currentMonthScenario)
                 {
                     case ChargeScenario.PaidAndTransferred:
-                        {
-                            var paidAtUtc = DateTime.UtcNow.AddDays(-2);
-                            charge.Status = ChargeStatus.Paid;
-                            charge.PaidAt = paidAtUtc;
-                            charge.PaidAmount = rentAmount;
-                            charge.PaymentMethod = "Pix";
-                            charge.IsTransferredToOwner = true;
-                            charge.TransferredToOwnerAt = paidAtUtc.AddHours(6);
-                            charge.Notes = "Recebido via Pix e repassado ao proprietário no mesmo dia.";
-                            break;
-                        }
+                    {
+                        var paidAtUtc = DateTime.UtcNow.AddDays(-2);
+                        charge.Status = ChargeStatus.Paid;
+                        charge.PaidAt = paidAtUtc;
+                        charge.PaidAmount = rentAmount;
+                        charge.PaymentMethod = "Pix";
+                        charge.IsTransferredToOwner = true;
+                        charge.TransferredToOwnerAt = paidAtUtc.AddHours(6);
+                        charge.Notes = "Recebido via Pix e repassado ao proprietário no mesmo dia.";
+                        break;
+                    }
                     case ChargeScenario.PaidPendingTransfer:
-                        {
-                            var paidAtUtc = DateTime.UtcNow.AddHours(-18);
-                            charge.Status = ChargeStatus.Paid;
-                            charge.PaidAt = paidAtUtc;
-                            charge.PaidAmount = rentAmount;
-                            charge.PaymentMethod = "Pix";
-                            charge.IsTransferredToOwner = false;
-                            charge.TransferredToOwnerAt = null;
-                            charge.Notes = "Comprovante Pix validado. Aguardando liberação do repasse ao proprietário.";
-                            break;
-                        }
+                    {
+                        var paidAtUtc = DateTime.UtcNow.AddHours(-18);
+                        charge.Status = ChargeStatus.Paid;
+                        charge.PaidAt = paidAtUtc;
+                        charge.PaidAmount = rentAmount;
+                        charge.PaymentMethod = "Pix";
+                        charge.IsTransferredToOwner = false;
+                        charge.TransferredToOwnerAt = null;
+                        charge.Notes = "Comprovante Pix validado. Aguardando liberação do repasse ao proprietário.";
+                        break;
+                    }
                     case ChargeScenario.OverdueTwoMonths:
+                    {
+                        // Garante que a data de vencimento no mês atual já tenha passado
+                        if (charge.DueDate >= today)
                         {
-                            // Garante que a data de vencimento no mês atual já tenha passado
-                            if (charge.DueDate >= today)
-                            {
-                                charge.DueDate = today.AddDays(-1);
-                            }
-                            charge.Status = ChargeStatus.Pending;
-                            charge.Notes = "Parcela do mês atual vencida. Aguardando retorno sobre proposta de acordo.";
-                            break;
+                            charge.DueDate = today.AddDays(-1);
                         }
+
+                        charge.Status = ChargeStatus.Pending;
+                        charge.Notes = "Parcela do mês atual vencida. Aguardando retorno sobre proposta de acordo.";
+                        break;
+                    }
                     case ChargeScenario.PendingDueSoon:
                     case ChargeScenario.UpcomingInMonth:
                     default:
-                        {
-                            charge.Status = ChargeStatus.Pending;
-                            break;
-                        }
+                    {
+                        charge.Status = ChargeStatus.Pending;
+                        break;
+                    }
                 }
             }
 
@@ -707,6 +714,47 @@ public static class DatabaseSeeder
         if (rem2 == 10) rem2 = 0;
 
         return tenDigits + rem2;
+    }
+
+    private static bool IsRemoteDatabase(string? connectionString, IConfiguration configuration)
+    {
+        var tursoUrl = configuration["TURSO_DATABASE_URL"] ?? configuration["Turso:DatabaseUrl"];
+        var tursoToken = configuration["TURSO_AUTH_TOKEN"] ?? configuration["Turso:AuthToken"];
+
+        if (!string.IsNullOrWhiteSpace(tursoToken))
+            return true;
+
+        if (!string.IsNullOrWhiteSpace(tursoUrl) && IsRemoteUrl(tursoUrl))
+            return true;
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            return false;
+
+        if (connectionString.Contains("Auth Token=", StringComparison.OrdinalIgnoreCase)
+            || connectionString.Contains("turso.io", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return IsRemoteUrl(connectionString);
+    }
+
+    private static bool IsRemoteUrl(string value)
+    {
+        if (value.Contains("turso.io", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var isUrl = value.Contains("libsql://", StringComparison.OrdinalIgnoreCase)
+                    || value.Contains("https://", StringComparison.OrdinalIgnoreCase)
+                    || value.Contains("http://", StringComparison.OrdinalIgnoreCase);
+
+        if (!isUrl)
+            return false;
+
+        var isLocalhost = value.Contains("://localhost", StringComparison.OrdinalIgnoreCase)
+                          || value.Contains("://127.0.0.1", StringComparison.OrdinalIgnoreCase);
+
+        return !isLocalhost;
     }
 }
 
