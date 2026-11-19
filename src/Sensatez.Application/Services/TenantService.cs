@@ -48,7 +48,7 @@ public class TenantService(
             ?? throw new NotFoundException("Inquilino não encontrado.");
 
         tenant.FullName = request.FullName.Trim();
-        tenant.Email = request.Email.Trim();
+        tenant.Email = request.Email?.Trim() ?? string.Empty;
         tenant.Phone = request.Phone.Trim();
         tenant.AdditionalInfo = request.AdditionalInfo?.Trim();
 

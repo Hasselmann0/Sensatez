@@ -29,7 +29,7 @@ public class TenantRepository(SensatezDbContext context) : ITenantRepository
             query = query.Where(t =>
                 t.FullName.ToLower().Contains(term) ||
                 t.Document.Contains(term) ||
-                t.Email.ToLower().Contains(term));
+                (t.Email != null && t.Email.ToLower().Contains(term)));
         }
 
         return await query

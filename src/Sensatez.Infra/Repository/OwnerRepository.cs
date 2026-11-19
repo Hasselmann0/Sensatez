@@ -30,7 +30,7 @@ public class OwnerRepository(SensatezDbContext context) : IOwnerRepository
             query = query.Where(o =>
                 o.FullName.ToLower().Contains(term) ||
                 o.Document.Contains(term) ||
-                o.Email.ToLower().Contains(term));
+                (o.Email != null && o.Email.ToLower().Contains(term)));
         }
 
         return await query

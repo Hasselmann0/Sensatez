@@ -48,7 +48,7 @@ public class OwnerService(
             ?? throw new NotFoundException("Proprietário não encontrado.");
 
         owner.FullName = request.FullName.Trim();
-        owner.Email = request.Email.Trim();
+        owner.Email = request.Email?.Trim() ?? string.Empty;
         owner.Phone = request.Phone.Trim();
         owner.PixKey = request.PixKey?.Trim();
         owner.BankName = request.BankName?.Trim();

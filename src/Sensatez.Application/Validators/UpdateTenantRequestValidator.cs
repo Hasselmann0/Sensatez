@@ -12,9 +12,9 @@ public class UpdateTenantRequestValidator : AbstractValidator<UpdateTenantReques
             .Length(3, 150).WithMessage("O nome deve ter entre 3 e 150 caracteres.");
 
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("O e-mail é obrigatório.")
             .EmailAddress().WithMessage("Informe um endereço de e-mail válido.")
-            .MaximumLength(150).WithMessage("O e-mail deve ter no máximo 150 caracteres.");
+            .MaximumLength(150).WithMessage("O e-mail deve ter no máximo 150 caracteres.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
 
         RuleFor(x => x.Phone)
             .NotEmpty().WithMessage("O telefone é obrigatório.")

@@ -244,7 +244,7 @@
             >
               <option value="">Selecione o inquilino...</option>
               @for (t of tenantsStore.tenants(); track t.id) {
-                <option [value]="t.id">{{ t.fullName }} ({{ t.document }})</option>
+                <option [value]="t.id">{{ t.fullName }} ({{ t.document | cpfCnpj }})</option>
               }
             </select>
           </div>

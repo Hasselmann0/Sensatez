@@ -1,7 +1,7 @@
 export interface CreateOwnerRequest {
   fullName: string;
   document: string;
-  email: string;
+  email?: string | null;
   phone: string;
   pixKey?: string | null;
   bankName?: string | null;
@@ -12,7 +12,7 @@ export interface CreateOwnerRequest {
 
 export interface UpdateOwnerRequest {
   fullName: string;
-  email: string;
+  email?: string | null;
   phone: string;
   pixKey?: string | null;
   bankName?: string | null;
@@ -25,7 +25,7 @@ export interface OwnerResponse {
   id: string;
   fullName: string;
   document: string;
-  email: string;
+  email: string | null;
   phone: string;
   pixKey: string | null;
   bankName: string | null;

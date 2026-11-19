@@ -54,7 +54,7 @@ export class OwnersPageComponent implements OnInit {
   readonly ownerForm = this.fb.nonNullable.group({
     fullName: ['', Validators.required],
     document: ['', [Validators.required, DocumentValidator.cpfOrCnpjValidator()]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.email]],
     phone: ['', Validators.required],
     pixKey: [''],
     bankName: [''],
@@ -72,7 +72,7 @@ export class OwnersPageComponent implements OnInit {
         return (
           o.fullName.toLowerCase().includes(search) ||
           o.document.includes(search) ||
-          o.email.toLowerCase().includes(search)
+          (o.email ?? '').toLowerCase().includes(search)
         );
       }
       return true;
@@ -123,9 +123,9 @@ export class OwnersPageComponent implements OnInit {
     this.editingOwner.set(owner);
     this.ownerForm.patchValue({
       fullName: owner.fullName,
-      document: owner.document,
-      email: owner.email,
-      phone: owner.phone,
+      document: DocumentValidator.formatCpfOrCnpj(owner.document),
+      email: owner.email ?? '',
+      phone: DocumentValidator.formatPhoneBr(owner.phone),
       pixKey: owner.pixKey ?? '',
       bankName: owner.bankName ?? '',
       bankAgency: owner.bankAgency ?? '',
@@ -133,6 +133,20 @@ export class OwnersPageComponent implements OnInit {
       notes: owner.notes ?? ''
     });
     this.formModalOpen.set(true);
+  }
+
+  onDocumentInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = DocumentValidator.formatCpfOrCnpj(input.value);
+    input.value = formatted;
+    this.ownerForm.controls.document.setValue(formatted);
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = DocumentValidator.formatPhoneBr(input.value);
+    input.value = formatted;
+    this.ownerForm.controls.phone.setValue(formatted);
   }
 
   saveOwner(): void {
@@ -145,7 +159,7 @@ export class OwnersPageComponent implements OnInit {
         editing.id,
         {
           fullName: raw.fullName,
-          email: raw.email,
+          email: raw.email.trim() || null,
           phone: raw.phone.replace(/\D/g, ''),
           pixKey: raw.pixKey || null,
           bankName: raw.bankName || null,
@@ -160,7 +174,7 @@ export class OwnersPageComponent implements OnInit {
         {
           fullName: raw.fullName,
           document: raw.document.replace(/\D/g, ''),
-          email: raw.email,
+          email: raw.email.trim() || null,
           phone: raw.phone.replace(/\D/g, ''),
           pixKey: raw.pixKey || null,
           bankName: raw.bankName || null,

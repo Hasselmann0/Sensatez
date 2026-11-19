@@ -10,7 +10,7 @@ public static class TenantMapper
     {
         FullName = request.FullName.Trim(),
         Document = request.Document.Trim(),
-        Email = request.Email.Trim(),
+        Email = request.Email?.Trim() ?? string.Empty,
         Phone = request.Phone.Trim(),
         AdditionalInfo = request.AdditionalInfo?.Trim()
     };

@@ -4,7 +4,7 @@ public record OwnerResponse(
     Guid Id,
     string FullName,
     string Document,
-    string Email,
+    string? Email,
     string Phone,
     string? PixKey,
     string? BankName,

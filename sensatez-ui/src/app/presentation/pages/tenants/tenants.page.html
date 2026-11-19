@@ -59,7 +59,7 @@
         </div>
 
         <div class="space-y-1 text-xs pt-2 border-t border-slate-100 dark:border-[#22222A]">
-          <div class="text-slate-600 dark:text-zinc-300">✉️ {{ t.email }}</div>
+          <div class="text-slate-600 dark:text-zinc-300">✉️ {{ t.email || 'E-mail não inf.' }}</div>
           <div class="text-slate-500 dark:text-zinc-400">📱 {{ t.phone | phoneBr }}</div>
           @if (t.additionalInfo) {
             <div class="text-[11px] text-slate-400 italic pt-1">
@@ -135,7 +135,7 @@
                   </div>
                 </div>
               </td>
-              <td class="py-4 px-4">{{ t.email }}</td>
+              <td class="py-4 px-4">{{ t.email || '-' }}</td>
               <td class="py-4 px-4 space-x-2">
                 <span>{{ t.phone | phoneBr }}</span>
                 <app-whatsapp-button [phone]="t.phone" label="WhatsApp" />
@@ -214,6 +214,9 @@
           <input
             type="text"
             formControlName="document"
+            (input)="onDocumentInput($event)"
+            maxlength="18"
+            placeholder="000.000.000-00"
             [readonly]="!!editingTenant()"
             class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
           />
@@ -224,10 +227,11 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label class="block text-xs font-medium mb-1">E-mail *</label>
+            <label class="block text-xs font-medium mb-1">E-mail</label>
             <input
               type="email"
               formControlName="email"
+              placeholder="Opcional"
               class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
@@ -236,6 +240,9 @@
             <input
               type="text"
               formControlName="phone"
+              (input)="onPhoneInput($event)"
+              maxlength="15"
+              placeholder="(41) 99849-3917"
               class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>

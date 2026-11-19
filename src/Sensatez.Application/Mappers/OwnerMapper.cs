@@ -10,7 +10,7 @@ public static class OwnerMapper
     {
         FullName = request.FullName.Trim(),
         Document = request.Document.Trim(),
-        Email = request.Email.Trim(),
+        Email = request.Email?.Trim() ?? string.Empty,
         Phone = request.Phone.Trim(),
         PixKey = request.PixKey?.Trim(),
         BankName = request.BankName?.Trim(),

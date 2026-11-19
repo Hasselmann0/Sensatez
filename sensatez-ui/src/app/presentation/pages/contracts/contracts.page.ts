@@ -12,6 +12,7 @@ import {
   ReadjustmentIndex
 } from '../../../domain/enums/domain-enums';
 import { LeaseContractResponse } from '../../../domain/models/lease-contract.model';
+import { CpfCnpjPipe } from '../../pipes/format.pipes';
 import {
   StatusBadgeComponent,
   StatusStripItem,
@@ -29,6 +30,7 @@ import {
     ReactiveFormsModule,
     CurrencyPipe,
     DatePipe,
+    CpfCnpjPipe,
     UnderlineTabsComponent,
     StatusSummaryStripComponent,
     StatusBadgeComponent

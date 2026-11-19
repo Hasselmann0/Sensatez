@@ -74,7 +74,7 @@
 
         <div class="space-y-1.5 text-xs pt-2 border-t border-slate-100 dark:border-[#22222A]">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-slate-500 dark:text-zinc-400 truncate">{{ owner.email }}</span>
+            <span class="text-slate-500 dark:text-zinc-400 truncate">{{ owner.email || 'E-mail não inf.' }}</span>
             <app-whatsapp-button [phone]="owner.phone" label="WhatsApp" />
           </div>
 
@@ -161,7 +161,7 @@
                 </div>
               </td>
               <td class="py-4 px-4 space-y-1">
-                <div>{{ owner.email }}</div>
+                <div>{{ owner.email || 'E-mail não inf.' }}</div>
                 <div class="flex items-center gap-2">
                   <span class="text-slate-400">{{ owner.phone | phoneBr }}</span>
                   <app-whatsapp-button [phone]="owner.phone" label="Chat" />
@@ -259,8 +259,10 @@
             <input
               type="text"
               formControlName="document"
+              (input)="onDocumentInput($event)"
+              maxlength="18"
               [readonly]="!!editingOwner()"
-              placeholder="Somente números"
+              placeholder="000.000.000-00"
               class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700 read-only:opacity-60"
             />
             @if (ownerForm.controls.document.touched && ownerForm.controls.document.errors?.['invalidDocument']) {
@@ -271,10 +273,11 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
           <div>
-            <label class="block text-xs font-medium mb-1">E-mail *</label>
+            <label class="block text-xs font-medium mb-1">E-mail</label>
             <input
               type="email"
               formControlName="email"
+              placeholder="Opcional"
               class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>
@@ -283,7 +286,9 @@
             <input
               type="text"
               formControlName="phone"
-              placeholder="11999998888"
+              (input)="onPhoneInput($event)"
+              maxlength="15"
+              placeholder="(41) 99849-3917"
               class="w-full px-3 py-2.5 rounded-xl text-xs bg-slate-50 dark:bg-[#1C1C24] border border-slate-200 dark:border-zinc-700"
             />
           </div>

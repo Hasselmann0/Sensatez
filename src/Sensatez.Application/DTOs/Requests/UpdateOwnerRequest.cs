@@ -2,7 +2,7 @@ namespace Sensatez.Application.DTOs.Requests;
 
 public record UpdateOwnerRequest(
     string FullName,
-    string Email,
+    string? Email,
     string Phone,
     string? PixKey = null,
     string? BankName = null,

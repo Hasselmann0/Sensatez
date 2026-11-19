@@ -10,7 +10,8 @@ import {
   PropertyType
 } from '../../../domain/enums/domain-enums';
 import { PropertyResponse } from '../../../domain/models/property.model';
-import { CepBrPipe } from '../../pipes/format.pipes';
+import { DocumentValidator } from '../../../domain/validators/document.validator';
+import { CepBrPipe, CpfCnpjPipe } from '../../pipes/format.pipes';
 import {
   StatusBadgeComponent,
   StatusStripItem,
@@ -28,6 +29,7 @@ import {
     ReactiveFormsModule,
     CurrencyPipe,
     CepBrPipe,
+    CpfCnpjPipe,
     UnderlineTabsComponent,
     StatusSummaryStripComponent,
     StatusBadgeComponent
@@ -64,7 +66,7 @@ export class PropertiesPageComponent implements OnInit {
     neighborhood: ['', Validators.required],
     city: ['São Paulo', Validators.required],
     state: ['SP', [Validators.required, Validators.minLength(2), Validators.maxLength(2)]],
-    zipCode: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
+    zipCode: ['', [Validators.required, Validators.pattern(/^\d{5}-?\d{3}$/)]],
     type: [PropertyType.Apartment, Validators.required],
     suggestedRentAmount: [2500, [Validators.required, Validators.min(1)]],
     defaultCommissionPercentage: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -216,13 +218,20 @@ export class PropertiesPageComponent implements OnInit {
       neighborhood: prop.neighborhood,
       city: prop.city,
       state: prop.state,
-      zipCode: prop.zipCode.replace(/\D/g, ''),
+      zipCode: DocumentValidator.formatCepBr(prop.zipCode),
       type: prop.type,
       suggestedRentAmount: prop.suggestedRentAmount,
       defaultCommissionPercentage: prop.defaultCommissionPercentage,
       notes: prop.notes ?? ''
     });
     this.modalOpen.set(true);
+  }
+
+  onZipCodeInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = DocumentValidator.formatCepBr(input.value);
+    input.value = formatted;
+    this.propertyForm.controls.zipCode.setValue(formatted);
   }
 
   saveProperty(): void {

@@ -47,7 +47,7 @@ export class TenantsPageComponent implements OnInit {
   readonly tenantForm = this.fb.nonNullable.group({
     fullName: ['', Validators.required],
     document: ['', [Validators.required, DocumentValidator.cpfOrCnpjValidator()]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.email]],
     phone: ['', Validators.required],
     additionalInfo: ['']
   });
@@ -61,7 +61,7 @@ export class TenantsPageComponent implements OnInit {
         return (
           t.fullName.toLowerCase().includes(search) ||
           t.document.includes(search) ||
-          t.email.toLowerCase().includes(search)
+          (t.email ?? '').toLowerCase().includes(search)
         );
       }
       return true;
@@ -93,12 +93,26 @@ export class TenantsPageComponent implements OnInit {
     this.editingTenant.set(tenant);
     this.tenantForm.patchValue({
       fullName: tenant.fullName,
-      document: tenant.document,
-      email: tenant.email,
-      phone: tenant.phone,
+      document: DocumentValidator.formatCpfOrCnpj(tenant.document),
+      email: tenant.email ?? '',
+      phone: DocumentValidator.formatPhoneBr(tenant.phone),
       additionalInfo: tenant.additionalInfo ?? ''
     });
     this.formModalOpen.set(true);
+  }
+
+  onDocumentInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = DocumentValidator.formatCpfOrCnpj(input.value);
+    input.value = formatted;
+    this.tenantForm.controls.document.setValue(formatted);
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = DocumentValidator.formatPhoneBr(input.value);
+    input.value = formatted;
+    this.tenantForm.controls.phone.setValue(formatted);
   }
 
   saveTenant(): void {
@@ -111,7 +125,7 @@ export class TenantsPageComponent implements OnInit {
         editing.id,
         {
           fullName: raw.fullName,
-          email: raw.email,
+          email: raw.email.trim() || null,
           phone: raw.phone.replace(/\D/g, ''),
           additionalInfo: raw.additionalInfo || null
         },
@@ -122,7 +136,7 @@ export class TenantsPageComponent implements OnInit {
         {
           fullName: raw.fullName,
           document: raw.document.replace(/\D/g, ''),
-          email: raw.email,
+          email: raw.email.trim() || null,
           phone: raw.phone.replace(/\D/g, ''),
           additionalInfo: raw.additionalInfo || null
         },
